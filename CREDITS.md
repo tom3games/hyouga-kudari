@@ -1,0 +1,19 @@
+- snd/bounce1.mp3: 100 CC0 SFX / rubberduck / CC0
+- snd/bounce2.mp3: 100 CC0 SFX / rubberduck / CC0
+- snd/land1.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/land2.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/ice_tick1.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/ice_tick2.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/ice_crack.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/gate.mp3: Bell dings/chimes / PWL / CC0
+- snd/whoosh.mp3: Air whoosh / pyranostudios / CC0
+- snd/fire.mp3: File:Bones breaking wood fire ice crackling.ogg / stephan / Public domain
+- snd/chime.mp3: File:Windchimes.ogg / Esc861 / Public domain
+- snd/cave.mp3: 100 CC0 SFX #2 / rubberduck / CC0
+- snd/drip.mp3: 100 CC0 SFX #2 / rubberduck / CC0
+- snd/finish.mp3: 85 Short music jingles / Kenney / CC0
+- snd/cp.mp3: 85 Short music jingles / Kenney / CC0
+- snd/squeak.mp3: Squeak toy sounds / bart / CC0
+- snd/wind.wav: Howling wind / Wikimedia Commons / CC0（14秒の継ぎ目なしループ）
+- snd/slide.wav: 上の風の録音を高い音だけにしたもの（氷を滑る音）
+- snd/fall_ahhh.mp3: UncleSigmund - ahhh (cc0) / Freesound 30988 / CC0

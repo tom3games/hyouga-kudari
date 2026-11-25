@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<script id="ghMove">if(location.hostname==='tom3games.github.io'&&!/[?&]stay=1/.test(location.search)){location.replace('https://tom3games.com/play/hyouga-kudari/'+location.search+location.hash)}</script>
+<link rel="canonical" href="https://tom3games.com/play/hyouga-kudari/">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>氷河くだり｜空の氷の道を滑る3Dドリフトゲーム</title>
+<meta name="description" content="空高くにかかった細い氷の道を、桶に乗ったカワウソが滑り降りるブラウザの3Dゲーム。曲がると遅れて滑るドリフト、減速、谷を跳んで弾み台でバウンド。雲海・溶鉄の川・水晶の洞窟・オーロラの夜の4つの世界。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="氷河くだり">
+<meta property="og:description" content="空にかかる細い氷の道を、桶の舟で滑り降りる。曲がり角で滑り、谷を跳んで、弾み台でバウンド。落ちたら区切りから。">
+<meta property="og:image" content="https://tom3games.com/play/hyouga-kudari/og.png?v=1">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://tom3games.com/play/hyouga-kudari/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0b1a2b">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script>(function(){var t0=Date.now();function add(){var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Hina+Mincho&family=Oswald:wght@400;600&display=swap';document.head.appendChild(l)}(function w(){if(window.__hkReady||Date.now()-t0>8000)add();else setTimeout(w,150)})()})()</script>
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<div id="view"></div>
+<div id="flash"></div>
+
+<section id="loading" class="screen">
+  <div class="ld">
+    <svg class="ld-ice" viewBox="0 0 120 40" aria-hidden="true"><path d="M2 30 L36 30 L60 22 L84 30 L118 30" fill="none" stroke="#bfe6ff" stroke-width="3" stroke-linecap="round"/><g class="ld-boat"><ellipse cx="60" cy="18" rx="9" ry="6" fill="#b9854f"/><circle cx="60" cy="11" r="4.5" fill="#7a5238"/></g></svg>
+    <p class="ld-txt" data-t="loading">氷の道へ</p>
+    <div class="ld-bar"><i id="ldFill"></i></div>
+  </div>
+</section>
+
+<section id="title" class="screen" hidden>
+  <h1 class="logo"><span data-t="title">氷河くだり</span></h1>
+  <p class="t-kicker" data-t="kicker"></p>
+  <div class="t-bottom">
+    <button id="bStart" class="start"><span data-t="start">くだる</span><small id="bestTxt"></small></button>
+    <div class="t-foot">
+      <button id="howBtn" class="link" data-t="how">遊び方</button>
+      <button id="langBtn" class="link">English</button>
+      <button id="muteBtn" class="link" data-t="sound_on">音 あり</button>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="screen" hidden>
+  <div class="sheet">
+    <h2 data-t="how_title">遊び方</h2>
+    <ol><li data-t="how1"></li><li data-t="how2"></li><li data-t="how3"></li><li data-t="how4"></li><li data-t="how5"></li></ol>
+    <button id="howClose" class="start small" data-t="back">もどる</button>
+  </div>
+</section>
+
+<div id="hud" hidden>
+  <div class="dist"><b id="hDist">0</b><i>m</i><span id="hTime">0:00.0</span></div>
+  <div class="tubs" id="hTubs"></div>
+  <button id="hMute" class="hbtn" aria-label="sound"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path id="muteX" d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" hidden/><path id="muteW" d="M16 8c2 2 2 6 0 8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
+  <div id="hWorld" class="world"></div>
+  <div id="hBand" class="band" hidden><i id="bandOk"></i><b id="bandNow"></b></div>
+  <div id="hFell" class="fell" hidden></div>
+  <div class="drift"><i id="hDrift"></i></div>
+  <div id="pads">
+    <button id="padL" class="pad" aria-label="left"><svg viewBox="0 0 48 48"><path d="M29 10 L14 24 L29 38" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button id="padB" class="pad brk" aria-label="brake"><svg viewBox="0 0 48 48"><path d="M10 18 L24 32 L38 18" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button id="padR" class="pad" aria-label="right"><svg viewBox="0 0 48 48"><path d="M19 10 L34 24 L19 38" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+</div>
+
+<section id="result" class="screen" hidden>
+  <div class="card">
+    <h2 id="rTitle"></h2>
+    <p class="r-dist"><b id="rDist">0</b><i>m</i></p>
+    <dl><dt data-t="r_time">タイム</dt><dd id="rTime"></dd><dt data-t="r_falls">落下</dt><dd id="rFalls"></dd><dt data-t="r_best">自己ベスト</dt><dd id="rBest"></dd></dl>
+    <div class="steps" id="rSteps"></div>
+    <button id="bAgain" class="start" data-t="again">もういちど</button>
+    <a id="bShare" class="link" target="_blank" rel="noopener" data-t="share">Xでポスト</a>
+  </div>
+</section>
+
+<script>
+// ブラウザの拡大を止める（ピンチ・ダブルタップ・トラックパッドのピンチ・Ctrl+ホイール/キー）。iOS は user-scalable=no を無視するので JS でも止める
+(function(){
+  var opt={passive:false};
+  ['gesturestart','gesturechange','gestureend'].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault()},opt)});
+  document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length>1)e.preventDefault()},opt);
+  var last=0;document.addEventListener('touchend',function(e){var n=Date.now();if(n-last<300&&!(e.target.closest&&e.target.closest('button,a')))e.preventDefault();last=n},opt);
+  document.addEventListener('dblclick',function(e){e.preventDefault()},opt);
+  window.addEventListener('wheel',function(e){if(e.ctrlKey)e.preventDefault()},opt);
+  window.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&['+','-','=','0',';'].indexOf(e.key)>=0)e.preventDefault()});
+})();
+// 起動失敗の保険。5秒たって window.__hkReady が立っていなければ原因と UA を画面に出す
+(function(){
+  var errs=[];
+  window.addEventListener('error',function(e){errs.push((e.message||'error')+' @'+(e.filename||'')+':'+(e.lineno||''))});
+  window.addEventListener('unhandledrejection',function(e){errs.push('reject: '+(e.reason&&e.reason.message||e.reason))});
+  setTimeout(function(){
+    if(window.__hkReady) return;
+    var d=document.createElement('div');d.id='boot-err';
+    d.textContent='起動できませんでした / failed to start\n'+(errs.join('\n')||'(no error captured)')+'\n'+navigator.userAgent;
+    document.body.appendChild(d);
+  },5000);
+})();
+</script>
+<script src="data.js?v=1"></script>
+<script src="js/sfx.js?v=1"></script>
+<script type="module" src="dist/main.js?v=1"></script>
+<script src="support.js?v=5" data-ja="温かいお茶" data-en="a hot tea"></script>
+</body>
+</html>
