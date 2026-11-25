@@ -78,3 +78,4 @@ body.nopads #pads{display:none}
 .steps i.on{background:var(--ice)}
 .card .start{justify-content:center;margin-top:4px}
 .card .link{align-self:center}
+#vig{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:9;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(60,0,0,.78) 100%)}

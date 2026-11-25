@@ -2,6 +2,7 @@ import './mute-auto.mjs'
 import { MUTE_LAUNCH, muteContext } from './mute.mjs'
 import { chromium, webkit } from 'playwright'
 import { spawn } from 'node:child_process'
+import { metrics } from './tools/metrics.mjs'
 import { mkdirSync } from 'node:fs'
 const ROOT = import.meta.dirname
 mkdirSync(ROOT + '/shots', { recursive: true })
@@ -55,9 +56,30 @@ await t('OGP 一式と og.png', async () => {
   expect(r.every(Boolean), JSON.stringify(r))
   const res = await fetch(URL0 + 'og.png'); expect(res.ok, 'og.png ' + res.status)
 })
-await t('コースの数: 4世界・門3つ・見せ場10回（各世界2〜3回）・弾み台と速さの帯', async () => {
+await t('コースの数: 4世界・門3つ・見せ場12回（各世界2〜3回）・弾み台と速さの帯', async () => {
   const r = await p.evaluate(() => { const c = hk.course; const per = [0, 0, 0, 0]; for (const j of hk.jumps) per[c.WLD[j.from]]++; return { gates: c.gates.length, jumps: hk.jumps.length, per, bands: hk.jumps.map(j => [j.lo, j.hi]), total: Math.round(c.total), minW: Math.min(...c.W) * 2 } })
-  expect(r.gates === 3 && r.jumps === 10 && r.per.every(n => n >= 2 && n <= 3) && r.bands.every(b => b[0] > 0 && b[1] - b[0] >= 4), JSON.stringify(r)); return r
+  expect(r.gates === 3 && r.jumps === 12 && r.per.every(n => n >= 2 && n <= 3) && r.bands.every(b => b[0] > 0 && b[1] - b[0] >= 4), JSON.stringify(r)); return r
+})
+await t('大ジャンプ: 最長の距離・滞空と、世界ごとに「とても長い滑空」がある', async () => {
+  const r = metrics(), per = [0, 1, 2, 3].map(w => r.filter(o => o.w === w))
+  const maxDist = Math.max(...r.map(o => o.dist)), maxAir = Math.max(...r.map(o => o.air)), maxLeg1 = Math.max(...r.map(o => o.leg1)), maxDrop = Math.max(...r.map(o => o.drop))
+  expect(r.every(o => o.ok) && maxDist >= 90 && maxAir >= 4 && maxLeg1 >= 1.8 && per.every(a => a.some(o => o.leg1 >= 1.8 && o.air >= 4)), JSON.stringify({ maxDist, maxAir, maxLeg1, maxDrop }))
+  return { maxDist, maxAir, maxLeg1, maxDrop, longPerWorld: per.map(a => a.filter(o => o.leg1 >= 1.8).length) }
+})
+await t('跳んだ後の急な曲がり: 各世界で2回以上、60度以上（最大110度前後）', async () => {
+  const r = metrics(), per = [0, 1, 2, 3].map(w => r.filter(o => o.w === w && o.turn >= 60))
+  expect(per.every(a => a.length >= 2), JSON.stringify(per.map(a => a.length)))
+  return { perWorld: per.map(a => a.length), maxTurn: Math.max(...r.map(o => o.turn)) }
+})
+await t('急な曲がりの案内（矢印の旗）と崩れる道・急な下りがある', async () => {
+  const r = await p.evaluate(() => ({ signs: hk.world.signs.length, crumble: hk.world.crumble.length, steep: [...new Set(Array.from(hk.course.SLP).map(x => x.toFixed(2)))].length }))
+  expect(r.signs >= 8 && r.crumble >= 10 && r.steep >= 2, JSON.stringify(r)); return r
+})
+await t('縁ぎりぎり（0.3m以内）で舟が傾き、画面の縁が暗くなる', async () => {
+  const r = await p.evaluate(() => { hk.toTitle(); hk.start(); hk.dbg.pause(true); hk.G.state = 'play'; hk.G.camBlend = 1; hk.teleport(25, 20); const s = hk.sim; s.fixSpeed = 20; for (let i = 0; i < 5; i++) hk.dbg.step(1, false)
+    s.x += Math.cos(s.tth) * (s.hw - 0.15); s.z -= Math.sin(s.tth) * (s.hw - 0.15); s.locate(); for (let i = 0; i < 40; i++) hk.dbg.step(1, true); s.fixSpeed = null
+    return { d: +s.d.toFixed(2), hw: +s.hw.toFixed(2), danger: +(hk.G.danger || 0).toFixed(2), vig: document.getElementById('vig').style.opacity } })
+  expect(r.danger > 0.5 && Math.abs(r.d) > r.hw - 0.3, JSON.stringify(r)); return r
 })
 await t('細い橋: 道幅が舟の2倍ちょっと（2.2m前後）の所がある', async () => { const m = await p.evaluate(() => Math.min(...hk.course.W) * 2); expect(m <= 2.3, 'min ' + m); return m })
 
@@ -222,13 +244,13 @@ await t('描画: 60Hz 固定の刻みでずれず、描画の負荷を数える'
 
 // ---- 4つの世界のスクショ（目視用）と、世界ごとの空気の違い
 await p.evaluate(() => { hk.botOff(); hk.toTitle(); hk.start(); hk.dbg.pause(true); hk.G.state = 'play'; document.getElementById('hWorld').classList.remove('on') })
-for (const [name, s] of [['w1', 120], ['w2', 975], ['w3', 1830], ['w4', 2560]]) {
+for (const [name, s] of [['w1', 120], ['w2', 1220], ['w3', 2385], ['w4', 3430]]) {
   await p.evaluate(s => { hk.botOff(); hk.dbg.pause(true); hk.G.state = 'play'; hk.teleport(s, 20) }, s)
   await p.evaluate(() => { for (let i = 0; i < 20; i++) hk.dbg.step(1, i === 19) })
   await p.waitForTimeout(100); await p.screenshot({ path: `${ROOT}/shots/world-${name}.png` })
 }
 await t('4つの世界で空・霧の色が違う', async () => {
-  const r = await p.evaluate(() => { const A = ['top', 'fog'].map(k => 0); return [0, 1, 2, 3].map(k => { hk.teleport([120, 975, 1830, 2560][k], 20); hk.dbg.step(2); return hk.world.skyM.uniforms.uMid.value.getHexString() + '/' + hk.scene.fog.color.getHexString() }) })
+  const r = await p.evaluate(() => { const A = ['top', 'fog'].map(k => 0); return [0, 1, 2, 3].map(k => { hk.teleport([120, 1220, 2385, 3430][k], 20); hk.dbg.step(2); return hk.world.skyM.uniforms.uMid.value.getHexString() + '/' + hk.scene.fog.color.getHexString() }) })
   expect(new Set(r).size === 4, r.join()); return r
 })
 await p.close()

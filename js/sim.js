@@ -83,7 +83,7 @@ export function makeSim(course = buildCourse()) {
     sim.th += sim.w * DT
     const f2x = Math.sin(sim.th), f2z = Math.cos(sim.th), l2x = Math.cos(sim.th), l2z = -Math.sin(sim.th)
     let vf = sim.vx * f2x + sim.vz * f2z, vl = sim.vx * l2x + sim.vz * l2z
-    const w = sim.world, vt = P.vt[Math.min(3, w)] * (sim.boostT > 0 ? P.boostMul : 1)
+    const w = sim.world, vt = (P.vt[Math.min(3, w)] + (c.SLP[sim.i] - 0.065) * 60) * (sim.boostT > 0 ? P.boostMul : 1)
     if (sim.ground) {
       vl *= Math.exp(-P.grip * (1 - 0.28 * fast + 0.35 * brake) * DT)
       if (brake > 0) vf = Math.max(P.vMin, vf - P.brake * brake * DT)

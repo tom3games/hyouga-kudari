@@ -60,8 +60,8 @@ export function createBoat() {
   const API = {
     root, body, shadow, head, tail, otter, scarf, lant,
     // t: 時間, speed: 速さ, lean: 横滑り(rad), pitch: 前後の傾き, scared: 0..1（怖がる顔の傾き）
-    animate(t, speed, lean, pitch, scared, brake) {
-      body.rotation.z = THREE.MathUtils.lerp(body.rotation.z, -lean * 0.55, 0.2)
+    animate(t, speed, lean, pitch, scared, brake, edge = 0) {
+      body.rotation.z = THREE.MathUtils.lerp(body.rotation.z, -lean * 0.55 + edge, 0.25)
       body.rotation.x = THREE.MathUtils.lerp(body.rotation.x, pitch + brake * 0.12, 0.2)
       otter.rotation.z = -lean * 0.4
       head.rotation.x = -0.12 - scared * 0.25 + Math.sin(t * 8) * 0.01 * speed * 0.1

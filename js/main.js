@@ -164,7 +164,7 @@ function onEvents(evs) {
     G.count[e.t] = (G.count[e.t] || 0) + 1; if (e.perfect) G.count.perfect = (G.count.perfect || 0) + 1
     switch (e.t) {
       case 'boost': Snd.play('whoosh', { vol: 0.85, rate: 1.1 }); G.kick = 1; G.shake = Math.max(G.shake, 0.5); break
-      case 'land': Snd.play('land', { vol: Math.min(1, 0.4 + e.imp / 30) }); G.shake = Math.max(G.shake, Math.min(1, e.imp / 26)); fx.burst(sim.x, sim.y, sim.z, 26, 5 + e.imp * 0.1); if (e.perfect) { Snd.play('cp', { vol: 0.5, rate: 1.3 }); G.kick = 1 } break
+      case 'land': G.push = 1; Snd.play('land', { vol: Math.min(1, 0.4 + e.imp / 30) }); G.shake = Math.max(G.shake, Math.min(1, e.imp / 26)); fx.burst(sim.x, sim.y, sim.z, 26, 5 + e.imp * 0.1); if (e.perfect) { Snd.play('cp', { vol: 0.5, rate: 1.3 }); G.kick = 1 } break
       case 'touch': break
       case 'bounce': {
         Snd.play('bounce', { vol: 1, rate: 1 }); Snd.play('squeak', { vol: 0.55, rate: 1.1, delay: 0.05 }); G.shake = 1; G.kick = 1.3
@@ -202,7 +202,18 @@ function frame(rdt, alpha) {
   const lean = Math.max(-0.6, Math.min(0.6, sim.slip)) * (sim.ground ? 1 : 0.3) + (sim.mode === 'fall' ? Math.sin(G.t * 9) * 0.5 : 0)
   const pitch = air ? Math.max(-0.5, Math.min(0.5, -sim.vy * 0.025)) : -0.04
   const scared = sim.mode === 'fall' ? 1 : sim.ground && Math.abs(sim.d) > sim.hw - 0.7 ? 0.8 : 0
-  boat.animate(G.t, speed, lean, pitch, scared, sim.brake || 0)
+  // 縁ぎりぎり（0.3m以内）: 舟が縁へ傾き、火花・きしみ・画面の縁の暗さ
+  const nearEdge = sim.ground && sim.mode === 'run' && sim.surf && Math.abs(sim.d) > sim.hw - 0.3
+  G.danger = (G.danger || 0) + ((nearEdge ? 1 : 0) - (G.danger || 0)) * (1 - Math.exp(-rdt * (nearEdge ? 10 : 3)))
+  const dg = G.danger
+  boat.animate(G.t, speed, lean, pitch, Math.max(scared, dg > 0.4 ? 0.8 : 0), sim.brake || 0, -Math.sign(sim.d || 1) * 0.42 * dg)
+  if (nearEdge && G.state === 'play') {
+    const th0 = sim.tth || th, sg = Math.sign(sim.d), ex = x + Math.cos(th0) * sg * 0.9, ez = z - Math.sin(th0) * sg * 0.9
+    if (Math.random() < 0.8) fx.emit(ex, y + 0.15, ez, -sim.vx * 0.15 + (Math.random() - 0.5) * 2, 1 + Math.random() * 2.5, -sim.vz * 0.15 + (Math.random() - 0.5) * 2, 0.35, 1, 0.75, 0.35)
+    G.creakT = (G.creakT || 0) - rdt; if (G.creakT <= 0) { G.creakT = 0.28; Snd.play('tick', { vol: 0.45, rate: 1.15 }) }
+  }
+  const vg = $('vig'); if (vg) vg.style.opacity = G.state === 'play' ? String(Math.min(1, dg * (0.5 + 0.4 * Math.max(0, Math.sin(G.t * 11)))) + (sim.mode === 'fall' ? 0.5 : 0)) : '0'
+  if (G.state === 'play' && course.CRM[sim.i] && sim.ground) { G.shake = Math.max(G.shake, 0.22); if (Math.random() < 0.5) fx.emit(x - Math.sin(th) * 2, y - 0.2, z - Math.cos(th) * 2, (Math.random() - 0.5) * 3, 2 + Math.random() * 3, (Math.random() - 0.5) * 3, 0.8, 0.8, 0.9, 1) }
   if (sim.mode === 'fall') { boat.body.rotation.x += rdt * 3.5; boat.body.rotation.z += rdt * 1.6 }
   // 接地影（床が見えている間だけ）
   boat.shadow.visible = sim.ground && sim.mode !== 'fall'
@@ -212,11 +223,12 @@ function frame(rdt, alpha) {
   if (G.camSnap) { G.yaw = vyaw; G.camSnap = false; G.snapPos = true }
   const dy = Math.atan2(Math.sin(vyaw - G.yaw), Math.cos(vyaw - G.yaw))
   G.yaw += dy * (1 - Math.exp(-rdt * (sim.mode === 'fall' ? 0.5 : 4)))
+  G.af = (G.af || 0) + (((air && sim.airT > 0.3 && sim.mode !== 'fall') ? 1 : 0) - (G.af || 0)) * (1 - Math.exp(-rdt * 2.2)); G.push = Math.max(0, (G.push || 0) - rdt * 1.6); const af = G.af
   let jt = 0
   if (G.state === 'play' && sim.mode !== 'fall') for (const j of jumps) if (sim.i >= j.from - 55 && sim.i <= j.end + 2) { jt = 1; break }
   G.jc = (G.jc || 0) + (jt - (G.jc || 0)) * (1 - Math.exp(-rdt * 2.2)); const jc = G.jc
   const tun = sim.world === 2 ? 1 : 0
-  const dist = (11.2 - tun * 1.6) + speed * 0.06 + (air ? 1.4 : 0) + (sim.boostT > 0 ? 0.8 : 0) + jc * 2.6, hgt = (6.8 - tun * 1.4) + (air ? 1.4 : 0) + jc * 3.4
+  const dist = (11.2 - tun * 1.6) + speed * 0.06 + (air ? 1.4 : 0) + (sim.boostT > 0 ? 0.8 : 0) + jc * 2.6 + af * 5.5 - G.push * 2.4, hgt = (6.8 - tun * 1.4) + (air ? 1.4 : 0) + jc * 3.4 + af * 4.2
   let cx, cy, cz, lx, ly, lz
   const fx_ = Math.sin(G.yaw), fz_ = Math.cos(G.yaw)
   if (G.state === 'title' || G.camBlend < 1) {
@@ -236,8 +248,9 @@ function frame(rdt, alpha) {
     lx = x; ly = y; lz = z; G.look.set(x, y, z)
   } else {
     cx = x - fx_ * dist; cy = y + hgt; cz = z - fz_ * dist
-    lx = x + fx_ * (7 + jc * 13); ly = y + 0.7 - (air ? 1.5 : 0) - jc * 2.5; lz = z + fz_ * (7 + jc * 13)
+    lx = x + fx_ * (7 + jc * 13); ly = y + 0.7 - (air ? 1.5 : 0) - jc * 2.5 - af * 3.5; lz = z + fz_ * (7 + jc * 13)
   }
+  const snapped = !!G.snapPos
   if (G.snapPos) { G.camPos.set(cx, cy, cz); G.look.set(lx, ly, lz); G.snapPos = false }
   const kp = 1 - Math.exp(-rdt * (sim.mode === 'fall' ? 3 : 12)), ky = 1 - Math.exp(-rdt * (air ? 4 : 8))
   G.camPos.x += (cx - G.camPos.x) * kp; G.camPos.z += (cz - G.camPos.z) * kp; G.camPos.y += (cy - G.camPos.y) * ky
@@ -247,18 +260,18 @@ function frame(rdt, alpha) {
   camera.position.set(G.camPos.x + (Math.random() - 0.5) * sh, G.camPos.y + (Math.random() - 0.5) * sh, G.camPos.z + (Math.random() - 0.5) * sh)
   camera.up.set(0, 1, 0); camera.lookAt(G.look)
   // 横滑りぶんカメラを傾ける
-  camera.rotateZ(-Math.max(-0.35, Math.min(0.35, sim.slip)) * 0.18 * (sim.ground ? 1 : 0))
+  camera.rotateZ(-Math.max(-0.35, Math.min(0.35, sim.slip)) * 0.18 * (sim.ground ? 1 : 0) - Math.sign(sim.d || 1) * 0.09 * dg)
   const asp = camera.aspect, baseFov = asp < 0.8 ? 78 : asp < 1.2 ? 66 : 58
-  const tf = baseFov + Math.min(14, Math.max(0, speed - 14) * 0.7) + G.kick * 6 + (sim.boostT > 0 ? 5 : 0) + jc * 5
+  const tf = baseFov + Math.min(20, Math.max(0, speed - 14) * 1.0) + G.kick * 6 + (sim.boostT > 0 ? 5 : 0) + jc * 5 + af * 7 - G.push * 4
   if (Math.abs(camera.fov - tf) > 0.05) { camera.fov += (tf - camera.fov) * Math.min(1, rdt * 6); camera.updateProjectionMatrix() }
   // 空気（門で切り替わる）
   updateAtm(rdt)
   const refY = sim.mode === 'fall' || air ? (sim.floor ?? y) : y
-  floorY += (refY - floorY) * Math.min(1, rdt * 2.5); if (G.snapPos) floorY = refY
+  floorY += (refY - floorY) * Math.min(1, rdt * 2.5); if (snapped) floorY = refY
   world.setAtm(atmCur, G.t, camera, { sy: 1, floor: floorY, y: floorY })
   keyLight.position.set(x - Math.sin(G.yaw) * 2.2, y + 3.2, z - Math.cos(G.yaw) * 2.2)
   lantLight.position.set(x + Math.sin(th) * 1.0, y + 1.4, z + Math.cos(th) * 1.0)
-  world.update({ i: sim.i }, rdt, G.t, camera)
+  world.update({ i: sim.i, world: sim.world }, rdt, G.t, camera)
   // 飛沫・風切り
   if (sim.ground && Math.abs(sim.slip) > 0.22 && speed > 10 && sim.mode === 'run') {
     G.sprayAcc += rdt * (30 + Math.abs(sim.slip) * 90); const n = Math.floor(G.sprayAcc); G.sprayAcc -= n

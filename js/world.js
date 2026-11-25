@@ -6,13 +6,13 @@ import { noise3, fbm3, rng } from './noise.js'
 const C = h => new THREE.Color(h)
 // 世界ごとの空気。top/mid/bot は空、fog は霧、emis は氷の内側の光
 export const ATM = [
-  { top: C(0x0f3f9c), mid: C(0x3c86dc), bot: C(0xcfe6fb), fog: C(0xa9cdee), fogD: 0.0021, hemiS: C(0xcfe6ff), hemiG: C(0x8fb0d0), hemiI: 0.95, sun: C(0xfff0d8), sunI: 1.5, sunDir: [0.5, 0.42, 0.75], expo: 1.0, stars: 0, aur: 0, ember: 0, emis: C(0x5a9fd0), emisI: 0.10, lant: 0, floorA: C(0xe9f3ff), floorB: C(0x8fb4dc), floorGlow: 0, floorGC: C(0xffffff), floorDrop: 62, flow: 0.01, env: 0.95, mote: C(0xffffff), moteRise: -0.6, moteN: 0.5, track: C(0xc2e0fa) },
-  { top: C(0x150807), mid: C(0x5c1d10), bot: C(0xff7a28), fog: C(0x8a3016), fogD: 0.0048, hemiS: C(0xffb080), hemiG: C(0x5a2210), hemiI: 1.0, sun: C(0xff8a3a), sunI: 2.0, sunDir: [-0.4, 0.16, 0.9], expo: 1.05, stars: 0, aur: 0, ember: 1, emis: C(0x2f86b0), emisI: 0.26, lant: 0.5, floorA: C(0x3a1006), floorB: C(0xff7a18), floorGlow: 1.3, floorGC: C(0xffc050), floorDrop: 40, flow: 0.06, env: 0.55, mote: C(0xff9a40), moteRise: 2.2, moteN: 1, track: C(0x9fd8f4) },
-  { top: C(0x04070e), mid: C(0x08101c), bot: C(0x0c1c2c), fog: C(0x0a1c30), fogD: 0.0085, hemiS: C(0x6aa6d8), hemiG: C(0x2a3a4a), hemiI: 1.1, sun: C(0x7fb8ff), sunI: 0.3, sunDir: [0.2, 0.8, 0.3], expo: 1.15, stars: 0, aur: 0, ember: 0, emis: C(0x2f9fd0), emisI: 0.22, lant: 1, floorA: C(0x02060c), floorB: C(0x0a2236), floorGlow: 0.25, floorGC: C(0x3ad0e0), floorDrop: 50, flow: 0.012, env: 0.55, mote: C(0x8ff0ff), moteRise: 0.3, moteN: 0.7, track: C(0xa8e4ff) },
-  { top: C(0x050a26), mid: C(0x1b2b6b), bot: C(0x5b4a98), fog: C(0x24246a), fogD: 0.0032, hemiS: C(0x8aa8ff), hemiG: C(0x2a2450), hemiI: 0.7, sun: C(0xcfd8ff), sunI: 1.1, sunDir: [-0.55, 0.38, 0.7], expo: 1.1, stars: 1, aur: 1, ember: 0, emis: C(0x56d6c2), emisI: 0.2, lant: 0.7, floorA: C(0x060d28), floorB: C(0x123a62), floorGlow: 1.0, floorGC: C(0x58f0c0), floorDrop: 58, flow: 0.02, env: 0.85, mote: C(0xdff6ff), moteRise: -0.3, moteN: 0.8, track: C(0xcdf4ee) },
+  { top: C(0x0f3f9c), mid: C(0x3c86dc), bot: C(0xcfe6fb), fog: C(0xa9cdee), fogD: 0.0021, hemiS: C(0xcfe6ff), hemiG: C(0x8fb0d0), hemiI: 0.95, sun: C(0xfff0d8), sunI: 1.5, sunDir: [0.5, 0.42, 0.75], expo: 1.0, stars: 0, aur: 0, ember: 0, emis: C(0x5a9fd0), emisI: 0.10, lant: 0, floorA: C(0xe9f3ff), floorB: C(0x8fb4dc), floorGlow: 0, floorGC: C(0xffffff), floorDrop: 62, floorScale: 0.012, flow: 0.01, env: 0.95, mote: C(0xffffff), moteRise: -0.6, moteN: 0.5, track: C(0xc2e0fa) },
+  { top: C(0x150807), mid: C(0x5c1d10), bot: C(0xff7a28), fog: C(0x8a3016), fogD: 0.0048, hemiS: C(0xffb080), hemiG: C(0x5a2210), hemiI: 1.0, sun: C(0xff8a3a), sunI: 2.0, sunDir: [-0.4, 0.16, 0.9], expo: 1.05, stars: 0, aur: 0, ember: 1, emis: C(0x2f86b0), emisI: 0.26, lant: 0.5, floorA: C(0x5a1808), floorB: C(0xff8a24), floorGlow: 2.0, floorGC: C(0xffc050), floorDrop: 34, floorScale: 0.045, flow: 0.07, env: 0.55, mote: C(0xff9a40), moteRise: 2.2, moteN: 1, track: C(0x9fd8f4) },
+  { top: C(0x04070e), mid: C(0x08101c), bot: C(0x0c1c2c), fog: C(0x0a1c30), fogD: 0.0085, hemiS: C(0x6aa6d8), hemiG: C(0x2a3a4a), hemiI: 1.1, sun: C(0x7fb8ff), sunI: 0.3, sunDir: [0.2, 0.8, 0.3], expo: 1.15, stars: 0, aur: 0, ember: 0, emis: C(0x2f9fd0), emisI: 0.22, lant: 1, floorA: C(0x02060c), floorB: C(0x0a2236), floorGlow: 0.25, floorGC: C(0x3ad0e0), floorDrop: 50, floorScale: 0.02, flow: 0.012, env: 0.55, mote: C(0x8ff0ff), moteRise: 0.3, moteN: 0.7, track: C(0xa8e4ff) },
+  { top: C(0x050a26), mid: C(0x1b2b6b), bot: C(0x5b4a98), fog: C(0x24246a), fogD: 0.0032, hemiS: C(0x8aa8ff), hemiG: C(0x2a2450), hemiI: 0.7, sun: C(0xcfd8ff), sunI: 1.1, sunDir: [-0.55, 0.38, 0.7], expo: 1.1, stars: 1, aur: 1, ember: 0, emis: C(0x56d6c2), emisI: 0.2, lant: 0.7, floorA: C(0x060d28), floorB: C(0x123a62), floorGlow: 0.45, floorGC: C(0x3fc8a0), floorDrop: 58, floorScale: 0.03, flow: 0.02, env: 0.85, mote: C(0xdff6ff), moteRise: -0.3, moteN: 0.8, track: C(0xcdf4ee) },
 ]
 export const NAMES = ['world0', 'world1', 'world2', 'world3']
-const NUM = ['fogD', 'hemiI', 'sunI', 'expo', 'stars', 'aur', 'ember', 'emisI', 'lant', 'floorGlow', 'floorDrop', 'flow', 'env', 'moteRise', 'moteN']
+const NUM = ['fogD', 'hemiI', 'sunI', 'expo', 'stars', 'aur', 'ember', 'emisI', 'lant', 'floorGlow', 'floorDrop', 'floorScale', 'flow', 'env', 'moteRise', 'moteN']
 const COL = ['top', 'mid', 'bot', 'fog', 'hemiS', 'hemiG', 'sun', 'emis', 'floorA', 'floorB', 'floorGC', 'mote', 'track']
 export function lerpAtm(a, b, t, out = {}) {
   for (const k of NUM) out[k] = a[k] + (b[k] - a[k]) * t
@@ -54,12 +54,12 @@ function applySky(m, a, t) {
 
 const FLOOR_FRAG = `
 varying vec3 vW;
-uniform vec3 uA,uB,uG,uFogC; uniform float uGlow,uFogD,uTime,uFlow;
+uniform vec3 uA,uB,uG,uFogC; uniform float uGlow,uFogD,uTime,uFlow,uScale;
 float hash2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash2(i),hash2(i+vec2(1,0)),f.x),mix(hash2(i+vec2(0,1)),hash2(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*vn(p);p*=2.07;a*=.5;}return s;}
 void main(){
-  vec2 p=vW.xz*0.018; vec2 q=p+vec2(uTime*uFlow,uTime*uFlow*.6);
+  vec2 p=vW.xz*uScale; vec2 q=p+vec2(uTime*uFlow,uTime*uFlow*.6);
   float n=fbm(q+fbm(q*1.7+3.)*1.3);
   vec3 col=mix(uA,uB,smoothstep(0.3,0.7,n));
   float crack=smoothstep(0.045,0.0,abs(n-0.52));
@@ -109,9 +109,12 @@ export function buildTrack(c, mat) {
   const runs = []; let a = -1
   for (let i = 0; i < n; i++) { if (c.SOL[i] && a < 0) a = i; if (a >= 0 && (!c.SOL[i + 1] || i === n - 1) && c.SOL[i]) { runs.push([a, i]); a = -1 } }
   const deep = new THREE.Color(0x4a8fd0)
+  group.userData.crumble = []
   for (const [ra, rb] of runs) {
-    for (let ca = ra; ca <= rb; ca += 56) {
-      const cb = Math.min(rb, ca + 56)
+    for (let ca = ra; ca <= rb; ) {
+      const crm = c.CRM[ca], lim = crm ? 8 : 56; let cb = ca
+      while (cb < rb && cb - ca < lim && c.CRM[cb + 1] === crm) cb++
+      if (cb === ca) cb = Math.min(rb, ca + 1)
       const rings = []   // {i, scaleW, scaleV, off}
       if (ca === ra) rings.push({ i: ca, w: 0.6, v: 0.1, off: -0.9 }, { i: ca, w: 0.96, v: 0.75, off: -0.4 })
       for (let i = ca; i <= cb; i++) rings.push({ i, w: 1, v: 1, off: 0 })
@@ -156,8 +159,17 @@ export function buildTrack(c, mat) {
       if (ca === ra) capFan(0, true); if (cb === rb) capFan(R - 1, false)
       const geo = new THREE.BufferGeometry()
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2))
-      geo.setIndex(idx); geo.computeBoundingSphere()
-      group.add(new THREE.Mesh(geo, mat))
+      geo.setIndex(idx)
+      if (crm) {
+        let mx = 0, my = 0, mz = 0; const nv = pos.length / 3
+        for (let q = 0; q < nv; q++) { mx += pos[q * 3]; my += pos[q * 3 + 1]; mz += pos[q * 3 + 2] }
+        mx /= nv; my /= nv; mz /= nv
+        for (let q = 0; q < nv; q++) { pos[q * 3] -= mx; pos[q * 3 + 1] -= my; pos[q * 3 + 2] -= mz }
+        geo.computeBoundingSphere(); const m = new THREE.Mesh(geo, mat); m.position.set(mx, my, mz); group.add(m)
+        group.userData.crumble.push({ m, a: ca, b: cb, home: new THREE.Vector3(mx, my, mz), fall: 0, spin: [(Math.random() - 0.5) * 1.6, (Math.random() - 0.5) * 1.2, (Math.random() - 0.5) * 1.6] })
+      } else { geo.computeBoundingSphere(); group.add(new THREE.Mesh(geo, mat)) }
+      if (cb >= rb) break
+      ca = cb
     }
   }
   return group
@@ -241,7 +253,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
   const skyM = skyMaterial(); const dome = new THREE.Mesh(new THREE.SphereGeometry(700, 32, 16), skyM); dome.renderOrder = -10; dome.frustumCulled = false; scene.add(dome)
   W.dome = dome; W.skyM = skyM
   // 床（雲海・溶鉄・闇・夜の海）
-  const floorM = new THREE.ShaderMaterial({ uniforms: { uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uG: { value: new THREE.Color() }, uFogC: { value: new THREE.Color() }, uGlow: { value: 0 }, uFogD: { value: 0.004 }, uTime: { value: 0 }, uFlow: { value: 0.01 } }, vertexShader: 'varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}', fragmentShader: FLOOR_FRAG })
+  const floorM = new THREE.ShaderMaterial({ uniforms: { uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uG: { value: new THREE.Color() }, uFogC: { value: new THREE.Color() }, uGlow: { value: 0 }, uFogD: { value: 0.004 }, uTime: { value: 0 }, uFlow: { value: 0.01 }, uScale: { value: 0.018 } }, vertexShader: 'varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}', fragmentShader: FLOOR_FRAG })
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(3200, 3200, 1, 1).rotateX(-Math.PI / 2), floorM); floor.frustumCulled = false; scene.add(floor); W.floor = floor
   // 光
   const hemi = new THREE.HemisphereLight(0xffffff, 0x888888, 1); const sun = new THREE.DirectionalLight(0xffffff, 2); const sunT = new THREE.Object3D(); sun.target = sunT
@@ -298,6 +310,34 @@ export function createWorld(scene, renderer, c, opts = {}) {
     const post = (s) => { const p = new THREE.Group(); p.add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 2.2, 8), new THREE.MeshStandardMaterial({ color: 0x20384f, roughness: 0.6 }))); p.children[0].position.y = 1.1; const l = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffd27a })); l.position.y = 2.35; p.add(l); const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowT, color: 0xffc060, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })); sp.scale.setScalar(2.2); sp.position.y = 2.35; p.add(sp); p.position.set(s * (hw + 0.5), -0.1, 0); return p }
     g.add(post(1), post(-1)); g.position.set(c.X[ci], c.Y[ci], c.Z[ci]); g.rotation.y = th; scene.add(g); return g
   })
+  // 急な曲がりの手前の案内（外側に立つ矢印の旗。向きが道の曲がる向き）
+  W.signs = []
+  {
+    const plateM = new THREE.MeshStandardMaterial({ color: 0x0f2438, roughness: 0.6, emissive: 0x08141f, emissiveIntensity: 0.6 })
+    const chevM = new THREE.MeshBasicMaterial({ color: 0xff7a4d, side: THREE.DoubleSide })
+    const poleM = new THREE.MeshStandardMaterial({ color: 0x20384f, roughness: 0.6 })
+    const chev = (dirx) => { const sh = new THREE.Shape(); sh.moveTo(-0.22 * dirx, 0.5); sh.lineTo(0.18 * dirx, 0); sh.lineTo(-0.22 * dirx, -0.5); sh.lineTo(-0.02 * dirx, -0.5); sh.lineTo(0.38 * dirx, 0); sh.lineTo(-0.02 * dirx, 0.5); return new THREE.ShapeGeometry(sh) }
+    const cl = chev(-1), cr = chev(1)
+    let i = 1
+    while (i < c.n - 2) {
+      const d0 = c.TH[i + 1] - c.TH[i]
+      if (Math.abs(d0) < 0.004 || !c.SOL[i]) { i++; continue }
+      const sg = Math.sign(d0); let j = i; while (j < c.n - 2 && Math.sign(c.TH[j + 1] - c.TH[j]) === sg && Math.abs(c.TH[j + 1] - c.TH[j]) > 0.004) j++
+      const ang = Math.abs(c.TH[j] - c.TH[i])
+      if (ang >= 1.4) {
+        let si = Math.max(1, i - 40); while (si < i && !c.SOL[si]) si++
+        const th = c.TH[si], hw = c.W[si], off = -sg * (hw + 1.7)
+        const g = new THREE.Group(); g.scale.setScalar(1.5); g.position.set(c.X[si] + Math.cos(th) * off, c.Y[si], c.Z[si] - Math.sin(th) * off); g.rotation.y = th + Math.PI
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 2.6, 8), poleM); pole.position.y = 1.3; g.add(pole)
+        const plate = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.2, 0.1), plateM); plate.position.y = 2.7; g.add(plate)
+        for (const dx of [-0.42, 0.34]) { const m = new THREE.Mesh(sg > 0 ? cl : cr, chevM); m.position.set(dx, 2.7, 0.07); g.add(m) }
+        const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffa060 })); lamp.position.y = 3.5; g.add(lamp)
+        const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowT, color: 0xff8a50, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })); spr.scale.setScalar(2.4); spr.position.y = 3.5; g.add(spr)
+        scene.add(g); W.signs.push({ g, i: si, ang, dir: sg })
+      }
+      i = j + 1
+    }
+  }
   // 弾み台（クッションと的）
   W.pads = []
   const rt = ringTex(); const padRings = []
@@ -320,7 +360,8 @@ export function createWorld(scene, renderer, c, opts = {}) {
   const worldRange = k => [k === 0 ? 0 : c.gates[k - 1], k === 3 ? c.n - 1 : c.gates[k]]
   const pickSide = (idx, off, up = 0) => { const th = c.TH[idx], s = R() < 0.5 ? -1 : 1; return [c.X[idx] + Math.cos(th) * off * s, c.Y[idx] + up, c.Z[idx] - Math.sin(th) * off * s, s] }
   W.zones = []   // {g, i} 近くだけ表示
-  const addZone = (g, mid) => { scene.add(g); W.zones.push({ g, i: mid }) }
+  let zoneWorld = 0
+  const addZone = (g, mid) => { scene.add(g); W.zones.push({ g, i: mid, k: zoneWorld }) }
   const ZN = 230   // 1ゾーンのサンプル数（≈345m）
   const peakVars = [peakGeo(1, 0.5, [0.22, 0.28, 0.42]), peakGeo(5.5, 0.55, [0.26, 0.24, 0.34]), peakGeo(9.2, 0.45, [0.2, 0.3, 0.44])]
   const peakMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 })
@@ -346,7 +387,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
   const cnt = (n) => lowEnd ? Math.ceil(n * 0.6) : n
 
   for (let k = 0; k < 4; k++) {
-    const [wa, wb] = worldRange(k)
+    const [wa, wb] = worldRange(k); zoneWorld = k
     for (let za = wa; za < wb; za += ZN) {
       const zb = Math.min(wb, za + ZN), mid = Math.round((za + zb) / 2), g = new THREE.Group()
       const ri = () => za + Math.floor(R() * (zb - za))
@@ -382,7 +423,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
   {
     const [wa, wb] = worldRange(2), step = 3, rings = []
     // 空洞（見せ場の前後で大きく広げる）
-    const chamber = new Float32Array(c.n), rad0 = 7.0
+    const chamber = new Float32Array(c.n), rad0 = 5.3
     for (const g1 of c.gaps) if (c.PAD[g1.to]) { const g2 = c.gaps.find(q => q.from > g1.to); if (!g2) continue; const a = g1.from - 16, b = g2.to + 16; for (let i = Math.max(0, a); i <= Math.min(c.n - 1, b); i++) { const t = Math.min(1, Math.min(i - a, b - i) / 14); chamber[i] = Math.max(chamber[i], t * t * (3 - 2 * t)) } }
     const A0 = -0.95, A1 = Math.PI + 0.95, NA = 26
     const pos = [], col = [], idx = [], stalag = [], crys = []
@@ -392,13 +433,13 @@ export function createWorld(scene, renderer, c, opts = {}) {
       // 見せ場では上下の高さの中間に中心を寄せる
       let cyOff = 2.9
       if (ch > 0) { let lowest = c.Y[i]; for (let q = i; q < Math.min(c.n, i + 90); q++) lowest = Math.min(lowest, c.Y[q]); let up = c.Y[i]; for (let q = Math.max(0, i - 60); q <= i; q++) up = Math.max(up, c.Y[q]); cyOff = 2.9 + ch * ((up - c.Y[i]) * 0.5 + (lowest - c.Y[i]) * 0.5 - (up - lowest) * 0.0 + (up - lowest) * 0.38) }
-      const Rr = rad0 + ch * 7.5
+      const Rr = rad0 + ch * 9.5
       for (let a = 0; a <= NA; a++) {
         const ang = A0 + (A1 - A0) * a / NA, n = fbm3(i * 0.06, ang * 1.3, 2.2, 4), rid = fbm3(i * 0.15, ang * 2.5, 7.7, 3)
         const rd = Rr * (0.86 + n * 0.5) + (rid - 0.5) * 1.6
         pos.push(c.X[i] + Lx * Math.cos(ang) * rd, c.Y[i] + cyOff + Math.sin(ang) * rd * (1 + ch * 0.25), c.Z[i] + Lz * Math.cos(ang) * rd)
         const m = 0.5 + rid * 0.5; col.push(0.3 * m + 0.04 + (rid > 0.62 ? 0.25 : 0), 0.55 * m + 0.08 + (rid > 0.62 ? 0.3 : 0), 0.95 * m + 0.12)
-        if (R() < 0.05 && ang > 0.4 && ang < Math.PI - 0.4) stalag.push([pos[pos.length - 3], pos[pos.length - 2], pos[pos.length - 1], Rr])
+        if (R() < 0.13 && ang > 0.3 && ang < Math.PI - 0.4) stalag.push([pos[pos.length - 3], pos[pos.length - 2], pos[pos.length - 1], Rr])
         if (R() < 0.22) crys.push([pos.length - 3, th, ang])
       }
       nRing++
@@ -413,7 +454,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
     const cmesh = inst(crystalGeo, crystalMat, crys.length * 3, (i, d) => {
       const q = crys[Math.floor(i / 3)], o = q[0]; d.position.set(pos[o], pos[o + 1], pos[o + 2]); const toward = new THREE.Vector3(c.X[wa] * 0, 0, 0)
       d.lookAt(d.position.x + (Math.random() - 0.5), d.position.y - 1, d.position.z + (Math.random() - 0.5)); d.rotateX(Math.PI / 2 * (R() - 0.5)); d.rotateZ(R() * 1.5)
-      const s = 0.35 + R() * 0.9; d.scale.set(s, s * (1.2 + R() * 1.4), s); return palette[Math.floor(R() * palette.length)]
+      const s = 0.5 + R() * 1.1; d.scale.set(s, s * (1.3 + R() * 1.6), s); return palette[Math.floor(R() * palette.length)]
     }); g.add(cmesh)
     // 光のにじみ（水晶のまわり）
     const gp = new Float32Array(crys.length * 3), gc = new Float32Array(crys.length * 3), tmpc = new THREE.Color()
@@ -421,15 +462,26 @@ export function createWorld(scene, renderer, c, opts = {}) {
     const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(gp, 3)); gg.setAttribute('color', new THREE.BufferAttribute(gc, 3))
     g.add(new THREE.Points(gg, new THREE.PointsMaterial({ size: 5, map: glowT, vertexColors: true, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true })))
     // 世界の入口は全部見えると重いので、世界3の間だけ表示
+    // 道の脇に立つ岩の柱（天井から下の闇まで）
+    const colG = new THREE.CylinderGeometry(0.8, 1.3, 1, 9, 1, true)
+    const cols = []; for (let i = wa + 6; i < wb - 4; i += 10) { const th = c.TH[i], sd = R() < 0.5 ? -1 : 1, off = sd * (c.W[i] + 1.6 + R() * 1.2); cols.push([c.X[i] + Math.cos(th) * off, c.Y[i], c.Z[i] - Math.sin(th) * off, 1.4 + R() * 0.9]) }
+    g.add(inst(colG, new THREE.MeshStandardMaterial({ color: 0x35506e, roughness: 0.9, emissive: 0x0a1a2c, emissiveIntensity: 0.8 }), cols.length, (i, d) => { const q = cols[i]; d.position.set(q[0], q[1] + 3, q[2]); d.scale.set(q[3], 34, q[3]) }))
     const shaftM = new THREE.MeshBasicMaterial({ color: 0x7fd8ff, transparent: true, opacity: 0.13, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
     for (let i = wa + 8; i < wb; i += 14) { const th = c.TH[i], off = (R() - 0.5) * 7; const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 1.7 + R(), 16, 10, 1, true), shaftM); sh.position.set(c.X[i] + Math.cos(th) * off, c.Y[i] + 11, c.Z[i] - Math.sin(th) * off); sh.rotation.z = (R() - 0.5) * 0.3; g.add(sh) }
     W.cave = g; scene.add(g)
   }
   W.spinners = spinners
+  W.crumble = track.userData.crumble
   W.update = (st, dt, t, cam) => {
+    for (const q of W.crumble) {
+      if (q.fall === 0 && st.i > q.b + 4) q.fall = 0.001
+      if (q.fall > 0) { q.fall += dt; const f = q.fall; q.m.position.y = q.home.y - 7 * f * f; q.m.rotation.x = q.spin[0] * f; q.m.rotation.y = q.spin[1] * f; q.m.rotation.z = q.spin[2] * f; q.m.visible = f < 2.6 && st.i > q.a - 4 }
+      else { q.m.position.copy(q.home); q.m.rotation.set(0, 0, 0); q.m.visible = true; if (st.i >= q.a - 2 && st.i <= q.b + 3) q.m.position.y += Math.sin(t * 70 + q.a) * 0.05 }
+      if (q.fall > 0 && st.i < q.a - 30) { q.fall = 0; q.m.visible = true }
+    }
     for (const [m, sp, ax] of spinners) { if (ax === 'x') m.rotation.y += sp * dt; else m.rotation.z += sp * dt }
     for (const g of W.gates) { const r = g.userData.rings; r[0].rotation.z += dt * 0.7; r[1].rotation.z -= dt * 1.1; r[2].rotation.y += dt * 0.9 }
-    for (const z of W.zones) z.g.visible = Math.abs(z.i - st.i) < 520
+    for (const z of W.zones) z.g.visible = Math.abs(z.i - st.i) < 520 && (z.k === (st.world ?? z.k) || (z.k === (st.world ?? 0) + 1 && c.gates[st.world] - st.i < 130))
     W.tube.visible = W.cave.visible = st.i > c.gates[1] - 260 && st.i < c.gates[2] + 120
     for (const p of W.pads) { const k = 1 + Math.sin(t * 4 + p.i) * 0.05; p.decal.scale.set(p.decal.scale.x, 1, p.decal.scale.z); p.decal.material.opacity = 0.7 + 0.3 * Math.sin(t * 5 + p.i); p.cush.material.emissiveIntensity = 0.45 + 0.25 * Math.sin(t * 4 + p.i) + (p.hit ? p.hit : 0); if (p.hit) p.hit = Math.max(0, p.hit - dt * 2.2); p.cush.scale.y = 0.5 * (1 - (p.squash || 0)); if (p.squash) p.squash = Math.max(0, p.squash - dt * 4) }
   }
@@ -439,7 +491,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
     sun.color.copy(a.sun); sun.intensity = a.sunI
     renderer.toneMappingExposure = a.expo
     applySky(skyM, a, t)
-    const u = floorM.uniforms; u.uA.value.copy(a.floorA); u.uB.value.copy(a.floorB); u.uG.value.copy(a.floorGC); u.uGlow.value = a.floorGlow; u.uFogC.value.copy(a.fog); u.uFogD.value = a.fogD; u.uTime.value = t; u.uFlow.value = a.flow
+    const u = floorM.uniforms; u.uA.value.copy(a.floorA); u.uB.value.copy(a.floorB); u.uG.value.copy(a.floorGC); u.uGlow.value = a.floorGlow; u.uFogC.value.copy(a.fog); u.uFogD.value = a.fogD; u.uTime.value = t; u.uFlow.value = a.flow; u.uScale.value = a.floorScale
     iceMat.emissive.copy(a.emis); iceMat.emissiveIntensity = a.emisI
     scene.environmentIntensity = a.env
     lantern.intensity = a.lant * 16
