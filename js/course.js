@@ -72,6 +72,8 @@ export function buildCourse() {
   // 世界の切り替わりは門の位置。門のあとが次の世界
   const worldAt = (i) => { let k = 0; for (const g of gates) if (i > g) k++; return k }
   for (let i = 0; i < n; i++) WLD[i] = worldAt(i)
+  for (let i = 0; i < n; i++) if (WLD[i] === 2 && W[i] < 2.5) W[i] += 0.12   // 洞窟の細い橋だけ少し余裕
+  for (let i = 0; i < n; i++) if (WLD[i] === 2) W[i] += 0.1
   // 区切り（復帰地点）: 先頭 + C + 各門のあと + 谷の着地後
   const cpList = [{ i: 4 }].concat(cps.map(i => ({ i }))).concat(gates.map(i => ({ i: i + 3 }))).sort((a, b) => a.i - b.i)
   return { n, X: Float32Array.from(X), Z: Float32Array.from(Z), Y: Float32Array.from(Y), TH: Float32Array.from(TH), W: Float32Array.from(W), SOL: Uint8Array.from(SOL), PAD: Uint8Array.from(PAD), WLD: Uint8Array.from(WLD), gates, cps: cpList.map(c => c.i), gaps, finishIdx, total: (n - 1) * DS, DS }

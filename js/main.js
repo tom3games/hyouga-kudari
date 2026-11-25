@@ -50,7 +50,7 @@ const world = createWorld(scene, renderer, course, { low })
 const boat = createBoat(); scene.add(boat.root, boat.shadow)
 const fx = createFx(scene, { low })
 const lantLight = world.lantern
-const keyLight = new THREE.PointLight(0xfff0dc, 9, 8, 1.6); scene.add(keyLight)
+const keyLight = new THREE.PointLight(0xfff0dc, 3.5, 8, 1.8); scene.add(keyLight)
 function resize() {
   const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix()
 }
@@ -117,7 +117,7 @@ function hudUpdate() {
   } else if (!band.hidden) band.hidden = true
 }
 function showWorld(k) {
-  const el = $('hWorld'); el.innerHTML = `<small>${T('world_n')} ${k + 1}</small>${T('world' + k)}`; el.classList.add('on'); clearTimeout(showWorld.t); showWorld.t = setTimeout(() => el.classList.remove('on'), 2600)
+  const el = $('hWorld'); el.innerHTML = `<small>${T('world_n')} ${k + 1}</small>${T('world' + k)}`; el.classList.add('on'); clearTimeout(showWorld.t); showWorld.t = setTimeout(() => el.classList.remove('on'), 2200)
 }
 
 // ------------------------------------------------------------ 進行
@@ -212,8 +212,11 @@ function frame(rdt, alpha) {
   if (G.camSnap) { G.yaw = vyaw; G.camSnap = false; G.snapPos = true }
   const dy = Math.atan2(Math.sin(vyaw - G.yaw), Math.cos(vyaw - G.yaw))
   G.yaw += dy * (1 - Math.exp(-rdt * (sim.mode === 'fall' ? 0.5 : 4)))
+  let jt = 0
+  if (G.state === 'play' && sim.mode !== 'fall') for (const j of jumps) if (sim.i >= j.from - 55 && sim.i <= j.end + 2) { jt = 1; break }
+  G.jc = (G.jc || 0) + (jt - (G.jc || 0)) * (1 - Math.exp(-rdt * 2.2)); const jc = G.jc
   const tun = sim.world === 2 ? 1 : 0
-  const dist = (11.2 - tun * 1.6) + speed * 0.06 + (air ? 1.4 : 0) + (sim.boostT > 0 ? 0.8 : 0), hgt = (6.8 - tun * 1.4) + (air ? 1.4 : 0)
+  const dist = (11.2 - tun * 1.6) + speed * 0.06 + (air ? 1.4 : 0) + (sim.boostT > 0 ? 0.8 : 0) + jc * 2.6, hgt = (6.8 - tun * 1.4) + (air ? 1.4 : 0) + jc * 3.4
   let cx, cy, cz, lx, ly, lz
   const fx_ = Math.sin(G.yaw), fz_ = Math.cos(G.yaw)
   if (G.state === 'title' || G.camBlend < 1) {
@@ -233,7 +236,7 @@ function frame(rdt, alpha) {
     lx = x; ly = y; lz = z; G.look.set(x, y, z)
   } else {
     cx = x - fx_ * dist; cy = y + hgt; cz = z - fz_ * dist
-    lx = x + fx_ * 7; ly = y + 0.7 - (air ? 1.5 : 0); lz = z + fz_ * 7
+    lx = x + fx_ * (7 + jc * 13); ly = y + 0.7 - (air ? 1.5 : 0) - jc * 2.5; lz = z + fz_ * (7 + jc * 13)
   }
   if (G.snapPos) { G.camPos.set(cx, cy, cz); G.look.set(lx, ly, lz); G.snapPos = false }
   const kp = 1 - Math.exp(-rdt * (sim.mode === 'fall' ? 3 : 12)), ky = 1 - Math.exp(-rdt * (air ? 4 : 8))
@@ -246,7 +249,7 @@ function frame(rdt, alpha) {
   // 横滑りぶんカメラを傾ける
   camera.rotateZ(-Math.max(-0.35, Math.min(0.35, sim.slip)) * 0.18 * (sim.ground ? 1 : 0))
   const asp = camera.aspect, baseFov = asp < 0.8 ? 78 : asp < 1.2 ? 66 : 58
-  const tf = baseFov + Math.min(14, Math.max(0, speed - 14) * 0.7) + G.kick * 6 + (sim.boostT > 0 ? 5 : 0)
+  const tf = baseFov + Math.min(14, Math.max(0, speed - 14) * 0.7) + G.kick * 6 + (sim.boostT > 0 ? 5 : 0) + jc * 5
   if (Math.abs(camera.fov - tf) > 0.05) { camera.fov += (tf - camera.fov) * Math.min(1, rdt * 6); camera.updateProjectionMatrix() }
   // 空気（門で切り替わる）
   updateAtm(rdt)
@@ -339,6 +342,7 @@ function boot() {
   $('ldFill').style.width = '100%'
   setTimeout(() => { $('loading').hidden = true; $('title').hidden = false; window.__hkReady = true }, 150)
   requestAnimationFrame(tick)
+  if (/[?&]auto=1/.test(location.search)) setTimeout(() => { startGame(); hk.botOn({ delay: 0.3, eye: 0.2, every: 0.25, seed: 3 }) }, 600)
 }
 // 検証用の窓口
 window.hk = {

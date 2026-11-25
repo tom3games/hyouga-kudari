@@ -47,9 +47,9 @@ button{background:none;border:0;cursor:pointer}
 .tubs{position:absolute;right:58px;top:max(18px,env(safe-area-inset-top));display:flex;gap:5px}
 .tubs svg{width:19px;height:19px;filter:drop-shadow(0 1px 4px rgba(7,20,32,.6))}
 .hbtn{position:absolute;right:12px;top:max(10px,env(safe-area-inset-top));width:40px;height:40px;display:flex;align-items:center;justify-content:center;pointer-events:auto;opacity:.85}
-.world{position:absolute;left:0;right:0;top:20%;text-align:center;font:400 28px var(--min);letter-spacing:.34em;text-shadow:0 2px 20px rgba(7,20,32,.8);opacity:0;transition:opacity .6s}
+.world{position:absolute;left:50%;transform:translateX(-50%);top:20%;text-align:center;font:400 28px var(--min);letter-spacing:.34em;color:#fff;background:rgba(7,20,32,.62);padding:12px 22px 12px 30px;border-left:3px solid var(--coral);text-shadow:0 1px 6px rgba(0,0,0,.6);opacity:0;transition:opacity .5s;white-space:nowrap}
 .world.on{opacity:1}
-.world small{display:block;font:400 13px var(--num);letter-spacing:.3em;color:var(--ice2);margin-bottom:8px}
+.world small{display:block;font:400 13px var(--num);letter-spacing:.3em;color:#a9d4ee;margin-bottom:6px}
 .fell{position:absolute;left:0;right:0;top:34%;text-align:center;font:400 38px var(--min);letter-spacing:.4em;color:var(--ice);text-shadow:0 2px 24px rgba(7,20,32,.9)}
 .fell small{display:block;margin-top:10px;font:400 14px var(--min);letter-spacing:.2em;color:var(--ice2)}
 .band{position:absolute;left:50%;transform:translateX(-50%);top:max(66px,calc(env(safe-area-inset-top) + 56px));width:min(62vw,250px);height:10px;background:rgba(7,20,32,.55);border:1px solid rgba(234,246,255,.45)}

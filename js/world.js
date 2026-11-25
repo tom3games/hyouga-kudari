@@ -6,9 +6,9 @@ import { noise3, fbm3, rng } from './noise.js'
 const C = h => new THREE.Color(h)
 // 世界ごとの空気。top/mid/bot は空、fog は霧、emis は氷の内側の光
 export const ATM = [
-  { top: C(0x1550b8), mid: C(0x4f9de8), bot: C(0xd6ecff), fog: C(0xb8d8f4), fogD: 0.0028, hemiS: C(0xcfe6ff), hemiG: C(0x9fb6c8), hemiI: 0.85, sun: C(0xfff0d8), sunI: 1.9, sunDir: [0.5, 0.42, 0.75], expo: 1.0, stars: 0, aur: 0, ember: 0, emis: C(0x5a9fd0), emisI: 0.10, lant: 0, floorA: C(0xf4f9ff), floorB: C(0xaecdea), floorGlow: 0, floorGC: C(0xffffff), floorDrop: 62, flow: 0.01, env: 0.95, mote: C(0xffffff), moteRise: -0.6, moteN: 0.5, track: C(0xd8efff) },
+  { top: C(0x0f3f9c), mid: C(0x3c86dc), bot: C(0xcfe6fb), fog: C(0xa9cdee), fogD: 0.0021, hemiS: C(0xcfe6ff), hemiG: C(0x8fb0d0), hemiI: 0.95, sun: C(0xfff0d8), sunI: 1.5, sunDir: [0.5, 0.42, 0.75], expo: 1.0, stars: 0, aur: 0, ember: 0, emis: C(0x5a9fd0), emisI: 0.10, lant: 0, floorA: C(0xe9f3ff), floorB: C(0x8fb4dc), floorGlow: 0, floorGC: C(0xffffff), floorDrop: 62, flow: 0.01, env: 0.95, mote: C(0xffffff), moteRise: -0.6, moteN: 0.5, track: C(0xc2e0fa) },
   { top: C(0x150807), mid: C(0x5c1d10), bot: C(0xff7a28), fog: C(0x8a3016), fogD: 0.0048, hemiS: C(0xffb080), hemiG: C(0x5a2210), hemiI: 1.0, sun: C(0xff8a3a), sunI: 2.0, sunDir: [-0.4, 0.16, 0.9], expo: 1.05, stars: 0, aur: 0, ember: 1, emis: C(0x2f86b0), emisI: 0.26, lant: 0.5, floorA: C(0x3a1006), floorB: C(0xff7a18), floorGlow: 1.3, floorGC: C(0xffc050), floorDrop: 40, flow: 0.06, env: 0.55, mote: C(0xff9a40), moteRise: 2.2, moteN: 1, track: C(0x9fd8f4) },
-  { top: C(0x04070e), mid: C(0x08101c), bot: C(0x0c1c2c), fog: C(0x08121d), fogD: 0.0155, hemiS: C(0x6aa6d8), hemiG: C(0x2a3a4a), hemiI: 1.1, sun: C(0x7fb8ff), sunI: 0.3, sunDir: [0.2, 0.8, 0.3], expo: 1.15, stars: 0, aur: 0, ember: 0, emis: C(0x2f9fd0), emisI: 0.22, lant: 1, floorA: C(0x02060c), floorB: C(0x0a2236), floorGlow: 0.25, floorGC: C(0x3ad0e0), floorDrop: 50, flow: 0.012, env: 0.55, mote: C(0x8ff0ff), moteRise: 0.3, moteN: 0.7, track: C(0xa8e4ff) },
+  { top: C(0x04070e), mid: C(0x08101c), bot: C(0x0c1c2c), fog: C(0x0a1c30), fogD: 0.0085, hemiS: C(0x6aa6d8), hemiG: C(0x2a3a4a), hemiI: 1.1, sun: C(0x7fb8ff), sunI: 0.3, sunDir: [0.2, 0.8, 0.3], expo: 1.15, stars: 0, aur: 0, ember: 0, emis: C(0x2f9fd0), emisI: 0.22, lant: 1, floorA: C(0x02060c), floorB: C(0x0a2236), floorGlow: 0.25, floorGC: C(0x3ad0e0), floorDrop: 50, flow: 0.012, env: 0.55, mote: C(0x8ff0ff), moteRise: 0.3, moteN: 0.7, track: C(0xa8e4ff) },
   { top: C(0x050a26), mid: C(0x1b2b6b), bot: C(0x5b4a98), fog: C(0x24246a), fogD: 0.0032, hemiS: C(0x8aa8ff), hemiG: C(0x2a2450), hemiI: 0.7, sun: C(0xcfd8ff), sunI: 1.1, sunDir: [-0.55, 0.38, 0.7], expo: 1.1, stars: 1, aur: 1, ember: 0, emis: C(0x56d6c2), emisI: 0.2, lant: 0.7, floorA: C(0x060d28), floorB: C(0x123a62), floorGlow: 1.0, floorGC: C(0x58f0c0), floorDrop: 58, flow: 0.02, env: 0.85, mote: C(0xdff6ff), moteRise: -0.3, moteN: 0.8, track: C(0xcdf4ee) },
 ]
 export const NAMES = ['world0', 'world1', 'world2', 'world3']
@@ -88,7 +88,7 @@ function iceTexture() {
   for (let k = 0; k < 70; k++) { g.strokeStyle = `rgba(120,170,215,${0.12 + r() * 0.2})`; g.lineWidth = 0.6 + r(); g.beginPath(); const x = r() * W, y = r() * H; g.arc(x, y, 1 + r() * 4, 0, 7); g.stroke() }
   // 縁の光る線（道の端が読めるように）
   const lg = g.createLinearGradient(0, 0, W, 0)
-  lg.addColorStop(0, 'rgba(255,255,255,0.95)'); lg.addColorStop(0.05, 'rgba(255,255,255,0.0)'); lg.addColorStop(0.95, 'rgba(255,255,255,0)'); lg.addColorStop(1, 'rgba(255,255,255,0.95)')
+  lg.addColorStop(0, 'rgba(10,50,120,0.95)'); lg.addColorStop(0.07, 'rgba(25,85,160,0.8)'); lg.addColorStop(0.115, 'rgba(235,248,255,0.55)'); lg.addColorStop(0.15, 'rgba(255,255,255,0)'); lg.addColorStop(0.85, 'rgba(255,255,255,0)'); lg.addColorStop(0.885, 'rgba(235,248,255,0.55)'); lg.addColorStop(0.93, 'rgba(25,85,160,0.8)'); lg.addColorStop(1, 'rgba(10,50,120,0.95)')
   g.fillStyle = lg; g.fillRect(0, 0, W, H)
   const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4
   return t
@@ -134,7 +134,7 @@ export function buildTrack(c, mat) {
           const nx = -ty / l, ny = tx / l
           nor[o] = Lx * nx; nor[o + 1] = ny; nor[o + 2] = Lz * nx
           tmp.copy(base).lerp(deep, Math.min(1, Math.max(0, -v0 / 1.7)) * 0.85)
-          if (k < 7) tmp.multiplyScalar(0.96 + 0.06 * Math.sin(i * 0.37 + u * 3))
+          if (k < 7) tmp.multiplyScalar((0.9 + 0.05 * Math.sin(i * 0.37 + u * 3)) * (1 - 0.35 * Math.abs(u) ** 3))
           col[o] = tmp.r; col[o + 1] = tmp.g; col[o + 2] = tmp.b
           const uo = (r * P + k) * 2; uv[uo] = k < 7 ? (u + 1) / 2 : 0.5 + u * 0.5; uv[uo + 1] = i * DS / 7 + rg.off / 7
         }
@@ -257,7 +257,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
   }
   W.envs = envs; scene.environment = envs[0]
   // 氷の道
-  const iceMat = new THREE.MeshStandardMaterial({ vertexColors: true, map: iceTexture(), roughness: 0.4, metalness: 0.0, envMapIntensity: 1.2, emissive: new THREE.Color(0x3a7fb0), emissiveIntensity: 0.12 })
+  const iceMat = new THREE.MeshStandardMaterial({ vertexColors: true, map: iceTexture(), roughness: 0.62, metalness: 0.0, envMapIntensity: 0.6, emissive: new THREE.Color(0x3a7fb0), emissiveIntensity: 0.1 })
   W.iceMat = iceMat
   const track = buildTrack(c, iceMat); scene.add(track); W.track = track
 
@@ -322,7 +322,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
   W.zones = []   // {g, i} 近くだけ表示
   const addZone = (g, mid) => { scene.add(g); W.zones.push({ g, i: mid }) }
   const ZN = 230   // 1ゾーンのサンプル数（≈345m）
-  const peakVars = [peakGeo(1), peakGeo(5.5), peakGeo(9.2)]
+  const peakVars = [peakGeo(1, 0.5, [0.22, 0.28, 0.42]), peakGeo(5.5, 0.55, [0.26, 0.24, 0.34]), peakGeo(9.2, 0.45, [0.2, 0.3, 0.44])]
   const peakMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 })
   const peakGeos4 = [peakGeo(2, 0.35, [0.3, 0.34, 0.6], [0.8, 0.9, 1.0], 0.4), peakGeo(7.1, 0.4, [0.26, 0.34, 0.55], [0.75, 0.95, 0.95], 0.4)]
   const cloudGeo = indexedSphere(1, 12, 8)
@@ -338,7 +338,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
   const crystalGeo = new THREE.OctahedronGeometry(1, 0).scale(0.22, 1.0, 0.22)
   const crystalMat = new THREE.MeshBasicMaterial({ color: 0xffffff })
   const stalGeo = new THREE.ConeGeometry(1, 1, 7, 1, false).translate(0, -0.5, 0)
-  const stalMat = new THREE.MeshStandardMaterial({ color: 0x2b3a4c, roughness: 0.9 })
+  const stalMat = new THREE.MeshStandardMaterial({ color: 0x4a6a8a, roughness: 0.9 })
   const lanternGeo = indexedSphere(0.35, 8, 6)
   const lanternMat = new THREE.MeshBasicMaterial({ color: 0xffe0a0 })
   const ringGeo = new THREE.TorusGeometry(1, 0.035, 8, 64)
@@ -353,8 +353,8 @@ export function createWorld(scene, renderer, c, opts = {}) {
       const rr = (a, b) => a + R() * (b - a)
       if (k === 0) {
         // 山・雲海・浮かぶ氷の丸い岩・氷の柱
-        for (let v = 0; v < 3; v++) g.add(inst(peakVars[v], peakMat, cnt(2), (i, d) => { const idx = ri(), [x, y, z] = pickSide(idx, rr(300, 700)); d.position.set(x, y - 95, z); const s = rr(95, 190); d.scale.set(s, s * rr(0.8, 1.2), s); d.rotation.y = R() * 6; return 0xffffff }))
-        g.add(inst(cloudGeo, cloudMat, cnt(190), (i, d) => { const idx = ri(), [x, y, z] = pickSide(idx, rr(-30, 280)); d.position.set(x + rr(-30, 30), y - rr(32, 70), z + rr(-30, 30)); const s = rr(14, 40); d.scale.set(s, s * rr(0.28, 0.45), s * rr(0.8, 1.2)); d.rotation.y = R() * 6; const t = rr(0.9, 1); return new THREE.Color(t, t, 1).getHex() }))
+        for (let v = 0; v < 3; v++) g.add(inst(peakVars[v], peakMat, cnt(4), (i, d) => { const idx = ri(), [x, y, z] = pickSide(idx, rr(230, 760)); d.position.set(x, y - 95, z); const s = rr(70, 190); d.scale.set(s, s * rr(0.8, 1.2), s); d.rotation.y = R() * 6; return 0xffffff }))
+        g.add(inst(cloudGeo, cloudMat, cnt(260), (i, d) => { const idx = ri(), [x, y, z] = pickSide(idx, rr(-30, 420)); d.position.set(x + rr(-30, 30), y - rr(32, 70), z + rr(-30, 30)); const s = rr(14, 40); d.scale.set(s, s * rr(0.28, 0.45), s * rr(0.8, 1.2)); d.rotation.y = R() * 6; const t = rr(0.9, 1); return new THREE.Color(t, t, 1).getHex() }))
         g.add(inst(boulders[0], iceBoulderMat, cnt(10), (i, d) => { const idx = ri(), [x, y, z] = pickSide(idx, rr(24, 130)); d.position.set(x, y + rr(-28, 14), z); const s = rr(2.5, 9); d.scale.set(s, s * 0.8, s); d.rotation.set(R() * 6, R() * 6, R() * 6) }))
         const pil = inst(pillarGeo, iceBoulderMat, Math.floor((zb - za) / 36), (i, d) => { const idx = za + i * 36; d.position.set(c.X[idx], c.Y[idx] - 38, c.Z[idx]) }); g.add(pil)
       } else if (k === 1) {
@@ -397,16 +397,16 @@ export function createWorld(scene, renderer, c, opts = {}) {
         const ang = A0 + (A1 - A0) * a / NA, n = fbm3(i * 0.06, ang * 1.3, 2.2, 4), rid = fbm3(i * 0.15, ang * 2.5, 7.7, 3)
         const rd = Rr * (0.86 + n * 0.5) + (rid - 0.5) * 1.6
         pos.push(c.X[i] + Lx * Math.cos(ang) * rd, c.Y[i] + cyOff + Math.sin(ang) * rd * (1 + ch * 0.25), c.Z[i] + Lz * Math.cos(ang) * rd)
-        const m = 0.5 + rid * 0.5; col.push(0.22 * m + 0.02, 0.45 * m + 0.05, 0.85 * m + 0.1)
+        const m = 0.5 + rid * 0.5; col.push(0.3 * m + 0.04 + (rid > 0.62 ? 0.25 : 0), 0.55 * m + 0.08 + (rid > 0.62 ? 0.3 : 0), 0.95 * m + 0.12)
         if (R() < 0.05 && ang > 0.4 && ang < Math.PI - 0.4) stalag.push([pos[pos.length - 3], pos[pos.length - 2], pos[pos.length - 1], Rr])
-        if (R() < 0.075) crys.push([pos.length - 3, th, ang])
+        if (R() < 0.22) crys.push([pos.length - 3, th, ang])
       }
       nRing++
     }
     const NP = NA + 1
     for (let r = 0; r < nRing - 1; r++) for (let a = 0; a < NA; a++) { const p0 = r * NP + a, p1 = p0 + 1, p2 = p0 + NP, p3 = p2 + 1; idx.push(p0, p2, p1, p1, p2, p3) }
     const tg = new THREE.BufferGeometry(); tg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); tg.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); tg.setIndex(idx); tg.computeVertexNormals(); tg.computeBoundingSphere()
-    const tube = new THREE.Mesh(tg, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0, side: THREE.DoubleSide, flatShading: false, emissive: 0x0a1c30, emissiveIntensity: 1 })); W.tube = tube; scene.add(tube)
+    const tube = new THREE.Mesh(tg, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0, side: THREE.DoubleSide, flatShading: false, emissive: 0x0e2a48, emissiveIntensity: 1.2 })); W.tube = tube; scene.add(tube)
     const g = new THREE.Group()
     g.add(inst(stalGeo, stalMat, stalag.length, (i, d) => { const s = stalag[i]; d.position.set(s[0], s[1], s[2]); const w = R() * 0.5 + 0.35; d.scale.set(w, 1.5 + R() * 5.5, w) }))
     const palette = [0x58e6ff, 0x7affd8, 0x9fb0ff, 0x58e6ff, 0xb0f0ff]
@@ -419,8 +419,10 @@ export function createWorld(scene, renderer, c, opts = {}) {
     const gp = new Float32Array(crys.length * 3), gc = new Float32Array(crys.length * 3), tmpc = new THREE.Color()
     crys.forEach((q, i) => { gp[i * 3] = pos[q[0]]; gp[i * 3 + 1] = pos[q[0] + 1]; gp[i * 3 + 2] = pos[q[0] + 2]; tmpc.setHex(palette[i % palette.length]); gc[i * 3] = tmpc.r; gc[i * 3 + 1] = tmpc.g; gc[i * 3 + 2] = tmpc.b })
     const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(gp, 3)); gg.setAttribute('color', new THREE.BufferAttribute(gc, 3))
-    g.add(new THREE.Points(gg, new THREE.PointsMaterial({ size: 3.6, map: glowT, vertexColors: true, transparent: true, opacity: 0.42, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true })))
+    g.add(new THREE.Points(gg, new THREE.PointsMaterial({ size: 5, map: glowT, vertexColors: true, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true })))
     // 世界の入口は全部見えると重いので、世界3の間だけ表示
+    const shaftM = new THREE.MeshBasicMaterial({ color: 0x7fd8ff, transparent: true, opacity: 0.13, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
+    for (let i = wa + 8; i < wb; i += 14) { const th = c.TH[i], off = (R() - 0.5) * 7; const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 1.7 + R(), 16, 10, 1, true), shaftM); sh.position.set(c.X[i] + Math.cos(th) * off, c.Y[i] + 11, c.Z[i] - Math.sin(th) * off); sh.rotation.z = (R() - 0.5) * 0.3; g.add(sh) }
     W.cave = g; scene.add(g)
   }
   W.spinners = spinners
@@ -440,7 +442,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
     const u = floorM.uniforms; u.uA.value.copy(a.floorA); u.uB.value.copy(a.floorB); u.uG.value.copy(a.floorGC); u.uGlow.value = a.floorGlow; u.uFogC.value.copy(a.fog); u.uFogD.value = a.fogD; u.uTime.value = t; u.uFlow.value = a.flow
     iceMat.emissive.copy(a.emis); iceMat.emissiveIntensity = a.emisI
     scene.environmentIntensity = a.env
-    lantern.intensity = a.lant * 40
+    lantern.intensity = a.lant * 16
     dome.position.copy(cam.position); sun.position.set(cam.position.x + a.sunDir[0] * 60, cam.position.y + a.sunDir[1] * 60, cam.position.z + a.sunDir[2] * 60); sunT.position.copy(cam.position)
     W.floor.position.set(cam.position.x, sim.sy !== undefined ? Math.min(sim.floor ?? 0, sim.y) - a.floorDrop : -a.floorDrop, cam.position.z)
   }
