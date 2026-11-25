@@ -366,6 +366,8 @@ export function createWorld(scene, renderer, c, opts = {}) {
   const peakVars = [peakGeo(1, 0.5, [0.22, 0.28, 0.42]), peakGeo(5.5, 0.55, [0.26, 0.24, 0.34]), peakGeo(9.2, 0.45, [0.2, 0.3, 0.44])]
   const peakMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 })
   const peakGeos4 = [peakGeo(2, 0.35, [0.3, 0.34, 0.6], [0.8, 0.9, 1.0], 0.4), peakGeo(7.1, 0.4, [0.26, 0.34, 0.55], [0.75, 0.95, 0.95], 0.4)]
+  // 雲がコースと後ろのカメラの通り道をふさがないように、近くを通る一番低い道より下へ沈める
+  const clearY = (x, y, z, r, ry) => { let low = 1e9; for (let i = 0; i < c.n; i += 3) { const dx = c.X[i] - x, dz = c.Z[i] - z; if (dx * dx + dz * dz < (r + 26) * (r + 26) && c.Y[i] < low) low = c.Y[i] } return low < 1e9 ? Math.min(y, low - ry - 16) : y }
   const cloudGeo = indexedSphere(1, 12, 8)
   const cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x6d8fb4, emissiveIntensity: 0.55 })
   const iceBoulderMat = new THREE.MeshStandardMaterial({ color: 0xcfe9ff, roughness: 0.25, emissive: 0x3a7fb0, emissiveIntensity: 0.15 })
@@ -395,7 +397,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
       if (k === 0) {
         // 山・雲海・浮かぶ氷の丸い岩・氷の柱
         for (let v = 0; v < 3; v++) g.add(inst(peakVars[v], peakMat, cnt(4), (i, d) => { const idx = ri(), [x, y, z] = pickSide(idx, rr(230, 760)); d.position.set(x, y - 95, z); const s = rr(70, 190); d.scale.set(s, s * rr(0.8, 1.2), s); d.rotation.y = R() * 6; return 0xffffff }))
-        g.add(inst(cloudGeo, cloudMat, cnt(260), (i, d) => { const idx = ri(), [x, y, z] = pickSide(idx, rr(-30, 420)); d.position.set(x + rr(-30, 30), y - rr(32, 70), z + rr(-30, 30)); const s = rr(14, 40); d.scale.set(s, s * rr(0.28, 0.45), s * rr(0.8, 1.2)); d.rotation.y = R() * 6; const t = rr(0.9, 1); return new THREE.Color(t, t, 1).getHex() }))
+        g.add(inst(cloudGeo, cloudMat, cnt(260), (i, d) => { const idx = ri(), [x, y, z] = pickSide(idx, rr(-30, 420)); const s = rr(14, 40), sy = s * rr(0.28, 0.45); const px = x + rr(-30, 30), pz = z + rr(-30, 30); d.position.set(px, clearY(px, y - rr(32, 70), pz, s * 1.2, sy), pz); d.scale.set(s, sy, s * rr(0.8, 1.2)); d.rotation.y = R() * 6; const t = rr(0.9, 1); return new THREE.Color(t, t, 1).getHex() }))
         g.add(inst(boulders[0], iceBoulderMat, cnt(10), (i, d) => { const idx = ri(), [x, y, z] = pickSide(idx, rr(24, 130)); d.position.set(x, y + rr(-28, 14), z); const s = rr(2.5, 9); d.scale.set(s, s * 0.8, s); d.rotation.set(R() * 6, R() * 6, R() * 6) }))
         const pil = inst(pillarGeo, iceBoulderMat, Math.floor((zb - za) / 36), (i, d) => { const idx = za + i * 36; d.position.set(c.X[idx], c.Y[idx] - 38, c.Z[idx]) }); g.add(pil)
       } else if (k === 1) {
