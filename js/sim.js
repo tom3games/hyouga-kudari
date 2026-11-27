@@ -5,15 +5,15 @@ import { buildCourse, DS } from './course.js'
 export const DT = 1 / 60
 export const P = {
   gravity: 26,
-  grip: 1.35,           // 横滑りが消える速さ（/秒）。小さいほど滑る
-  wMax: 1.35,           // 最大の回頭（rad/秒）
+  grip: 1.55,           // 横滑りが消える速さ（/秒）。小さいほど滑る
+  wMax: 1.5,            // 最大の回頭（rad/秒）
   wLag: 0.15,           // 回頭が入力に追いつく時間（秒）
   accel: 9, brake: 18, vMin: 12,             // 前進の加速上限 m/s^2
-  vt: [19, 21.5, 22.5, 25.5],   // 世界ごとの目標速度
+  vt: [18.5, 19.5, 20, 21],   // 世界ごとの目標速度
   boostMul: 1.28, boostTime: 1.6,
   driftAngle: 0.38, driftNeed: 0.65,   // この角度より深い横滑りを何秒保てば加速するか
-  edgeSlack: 0.32, fallDepth: 22, fallTime: 2.3,
-  lives: 4,
+  edgeSlack: 0.45, fallDepth: 22, fallTime: 2.3,
+  lives: 5,
 }
 
 export function makeSim(course = buildCourse()) {

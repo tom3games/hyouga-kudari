@@ -99,7 +99,7 @@ function setupInput() {
 const tubsEl = $('hTubs')
 const TUB = '<svg viewBox="0 0 20 20"><ellipse cx="10" cy="11" rx="7" ry="6" fill="#b9854f" stroke="#4a2c14" stroke-width="1"/><ellipse cx="10" cy="7" rx="7" ry="2.4" fill="#6b4524"/></svg>'
 const TUB0 = '<svg viewBox="0 0 20 20"><ellipse cx="10" cy="11" rx="7" ry="6" fill="none" stroke="#a9d4ee" stroke-width="1.3" stroke-dasharray="2 2"/></svg>'
-function hudTubs() { const spare = Math.max(0, sim.lives - 1); tubsEl.innerHTML = [0, 1, 2].map(i => i < spare ? TUB : TUB0).join('') }
+function hudTubs() { const spare = Math.max(0, sim.lives - 1); tubsEl.innerHTML = Array.from({ length: P.lives - 1 }, (_, i) => i < spare ? TUB : TUB0).join('') }
 function fmtTime(t) { const m = Math.floor(t / 60), s = t - m * 60; return `${m}:${s < 10 ? '0' : ''}${s.toFixed(1)}` }
 let lastDist = -1, lastTime = ''
 function hudUpdate() {

@@ -2,7 +2,7 @@ import '../mute-auto.mjs'
 import { chromium } from 'playwright'
 import { spawn } from 'node:child_process'
 const ROOT = new URL('..', import.meta.url).pathname
-const PORT = 5412
+const PORT = Number(process.env.SPORT || 5412)
 const server = spawn(process.execPath, ['server.mjs'], { cwd: ROOT, env: { ...process.env, PORT: String(PORT) } })
 await new Promise(r => setTimeout(r, 500))
 const [out, ...cmds] = process.argv.slice(2)   // 例: out.png "tp:100:20" "w:60" "shot:name"

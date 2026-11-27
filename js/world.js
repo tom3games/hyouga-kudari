@@ -324,7 +324,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
       if (Math.abs(d0) < 0.004 || !c.SOL[i]) { i++; continue }
       const sg = Math.sign(d0); let j = i; while (j < c.n - 2 && Math.sign(c.TH[j + 1] - c.TH[j]) === sg && Math.abs(c.TH[j + 1] - c.TH[j]) > 0.004) j++
       const ang = Math.abs(c.TH[j] - c.TH[i])
-      if (ang >= 1.4) {
+      if (ang >= 1.0) {
         let si = Math.max(1, i - 40); while (si < i && !c.SOL[si]) si++
         const th = c.TH[si], hw = c.W[si], off = -sg * (hw + 1.7)
         const g = new THREE.Group(); g.scale.setScalar(1.5); g.position.set(c.X[si] + Math.cos(th) * off, c.Y[si], c.Z[si] - Math.sin(th) * off); g.rotation.y = th + Math.PI

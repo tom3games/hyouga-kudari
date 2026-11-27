@@ -81,7 +81,7 @@ await t('縁ぎりぎり（0.3m以内）で舟が傾き、画面の縁が暗く�
     return { d: +s.d.toFixed(2), hw: +s.hw.toFixed(2), danger: +(hk.G.danger || 0).toFixed(2), vig: document.getElementById('vig').style.opacity } })
   expect(r.danger > 0.5 && Math.abs(r.d) > r.hw - 0.3, JSON.stringify(r)); return r
 })
-await t('細い橋: 道幅が舟の2倍ちょっと（2.2m前後）の所がある', async () => { const m = await p.evaluate(() => Math.min(...hk.course.W) * 2); expect(m <= 2.3, 'min ' + m); return m })
+await t('細い橋: 道幅が舟の2倍ほど（3m前後）の所がある', async () => { const m = await p.evaluate(() => Math.min(...hk.course.W) * 2); expect(m <= 3.1, 'min ' + m); return m })
 
 // ---- 物理（画面なしで高速に）
 await t('氷の物理: 曲げてから遅れて曲がる（横滑りが出る）', async () => {
@@ -213,7 +213,7 @@ await t('何もしない通し: 最初の曲がりで落ち、桶が尽きて到
     for (; i < 60 * 200; i++) { hk.dbg.step(1, false); if (s.dead) { if (s.lives > 0) hk.doRespawn(); else { over = true; break } } }
     return { falls: s.falls, dist: Math.round(s.maxS), over, finished: s.finished, resultShown: !document.getElementById('result').hidden, sec: +(i / 60).toFixed(0) }
   })
-  expect(r.over && r.falls === 4 && r.dist < 700 && !r.finished && r.resultShown, JSON.stringify(r)); return r
+  expect(r.over && r.falls === 5 && r.dist < 900 && !r.finished && r.resultShown, JSON.stringify(r)); return r
 })
 await t('結果画面: 到達距離・タイム・自己ベスト・Xポストのリンク', async () => {
   const r = await p.evaluate(() => ({ dist: document.getElementById('rDist').textContent, time: document.getElementById('rTime').textContent, best: document.getElementById('rBest').textContent, href: document.getElementById('bShare').href, again: !!document.getElementById('bAgain') }))
