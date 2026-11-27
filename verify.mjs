@@ -24,7 +24,7 @@ async function open(browser, opts = {}) {
   p.on('pageerror', e => p.errs.push('pageerror ' + e.message))
   p.on('console', m => { if (m.type() === 'error') p.errs.push('console ' + m.text().slice(0, 160)) })
   p.on('requestfailed', r => { if (!/fonts\.(googleapis|gstatic)/.test(r.url())) p.errs.push('reqfail ' + r.url()) })
-  await p.goto(URL0); await p.waitForFunction(() => window.__hkReady, null, { timeout: 30000 }).catch(e => { throw new Error('not ready: ' + p.errs.join(' | ')) })
+  await p.goto(URL0); await p.waitForFunction(() => window.__hkReady, null, { timeout: 30000 }).catch(async e => { throw new Error('not ready: ' + p.errs.join(' | ') + ' ' + await p.evaluate(() => [document.readyState, typeof hk, document.title, location.href].join(',')).catch(x => x.message)) })
   return p
 }
 const fit = q => q.evaluate(() => {
@@ -202,7 +202,7 @@ await t('先読み bot（反応0.15秒）が全コースをノーミスで完走
   const r = await p.evaluate(async () => {
     const s = hk.sim; hk.dbg.pause(true); hk.toTitle(); hk.start(); hk.G.state = 'play'; s.reset(0); s.lives = 4; s.falls = 0; s.maxS = 0; s.runT = 0
     hk.G.count = {}; hk.botOn({ delay: 0.15, every: 0.16, seed: 1 })
-    for (let i = 0; i < 60 * 260; i++) { hk.dbg.step(1, false); if (s.finished) break; if (s.dead && s.lives > 0) (hk.resume(), hk.G.fadeT = 0, hk.doRespawn()) }
+    for (let i = 0; i < 60 * 260; i++) { hk.dbg.step(1, false); if (s.finished) break; if (s.dead && s.lives > 0) (hk.G.fadeT = 0, hk.doRespawn(), hk.resume(), hk.G.state = 'play', document.getElementById('hCount').hidden = true) }
     hk.botOff(); return { fin: s.finished, falls: s.falls, bounces: hk.G.count.bounce, perfect: hk.G.count.perfect || 0, boosts: hk.G.count.boost || 0, time: +s.runT.toFixed(1), dist: Math.round(s.maxS) }
   })
   expect(r.fin && r.falls === 0 && r.bounces >= 10, JSON.stringify(r)); return r
@@ -210,7 +210,7 @@ await t('先読み bot（反応0.15秒）が全コースをノーミスで完走
 await t('何もしない通し: 最初の曲がりで落ち、桶が尽きて到達距離が短い', async () => {
   const r = await p.evaluate(async () => {
     const s = hk.sim; hk.toTitle(); hk.start(); hk.dbg.pause(true); hk.G.state = 'play'; hk.botOff(); s.runT = 0; s.maxS = 0; let falls = 0, over = false, i = 0
-    for (; i < 60 * 200; i++) { hk.dbg.step(1, false); if (s.dead) { if (s.lives > 0) (hk.resume(), hk.G.fadeT = 0, hk.doRespawn()); else { over = true; break } } }
+    for (; i < 60 * 200; i++) { hk.dbg.step(1, false); if (s.dead) { if (s.lives > 0) (hk.G.fadeT = 0, hk.doRespawn(), hk.resume(), hk.G.state = 'play', document.getElementById('hCount').hidden = true); else { over = true; break } } }
     return { falls: s.falls, dist: Math.round(s.maxS), over, finished: s.finished, resultShown: !document.getElementById('result').hidden, sec: +(i / 60).toFixed(0) }
   })
   expect(r.over && r.falls === 5 && r.dist < 900 && !r.finished && r.resultShown, JSON.stringify(r)); return r

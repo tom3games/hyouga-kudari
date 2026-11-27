@@ -81,3 +81,6 @@ body.nopads #pads{display:none}
 .card .start{justify-content:center;margin-top:4px}
 .card .link{align-self:center}
 #vig{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:9;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(60,0,0,.78) 100%)}
+.count{position:absolute;left:0;right:0;top:30%;text-align:center;font:400 96px var(--min);color:var(--ice);text-shadow:0 2px 28px rgba(7,20,32,.9);pointer-events:none}
+.count.pop{animation:cpop .9s ease-out}
+@keyframes cpop{0%{transform:scale(1.6);opacity:0}25%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:.2}}

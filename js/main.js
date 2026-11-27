@@ -139,7 +139,7 @@ function startGame() {
   setWorldVisual(0, true); hudTubs(); G.newBest = false
 }
 function toTitle() {
-  G.state = 'title'; $('bGo').hidden = true; $('hFell').hidden = true; $('result').hidden = true; $('hud').hidden = true; $('title').hidden = false; sim.reset(0); sim.lives = P.lives; sim.falls = 0; sim.runT = 0; sim.maxS = 0; sim.dead = false; sim.mode = 'run'
+  G.state = 'title'; $('bGo').hidden = true; $('hCount').hidden = true; $('hFell').hidden = true; $('result').hidden = true; $('hud').hidden = true; $('title').hidden = false; sim.reset(0); sim.lives = P.lives; sim.falls = 0; sim.runT = 0; sim.maxS = 0; sim.dead = false; sim.mode = 'run'
   prev.x = sim.x; prev.y = sim.y; prev.z = sim.z; prev.th = sim.th; setWorldVisual(0, true); G.camBlend = 0; applyLang()
 }
 function showResult(done) {
@@ -156,13 +156,23 @@ function showResult(done) {
   $('hud').hidden = true; $('result').hidden = false
 }
 function resume() {
-  if (G.state !== 'wait') return
-  $('bGo').hidden = true; G.state = 'play'; G.fadeT = 0.0001; startAudio()
+  if (G.state !== 'wait' || $('bGo').hidden) return
+  $('bGo').hidden = true; G.state = 'count'; G.countT = 0; G.countN = 0; startAudio()
+}
+// つづけるの後の 3・2・1
+function countTick(dt) {
+  G.countT += dt
+  const n = 3 - Math.floor(G.countT)
+  const el = $('hCount')
+  if (n <= 0) { el.hidden = true; G.state = 'play'; return }
+  if (n !== G.countN) { G.countN = n; el.textContent = n; el.hidden = false; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); Snd.play('tick', { vol: 0.7, rate: n === 1 ? 1.25 : 1 }) }
 }
 function doRespawn() {
   sim.respawn(); sim.dead = false; prev.x = sim.x; prev.y = sim.y; prev.z = sim.z; prev.th = sim.th
   G.yaw = sim.th; G.camSnap = true; G.fall.t = 0; $('hFell').hidden = true; hudTubs()
   if (sim.world !== G.wl) setWorldVisual(sim.world, true)
+  // コースの上に戻ってから「つづける」を出す
+  if (G.state === 'wait') $('bGo').hidden = false
 }
 function onEvents(evs) {
   for (const e of evs) {
@@ -183,8 +193,9 @@ function onEvents(evs) {
       case 'fall': Snd.play('fall', { vol: 0.9, rate: 1.45 }); Snd.play('squeak', { vol: 0.5, rate: 0.8 }); G.fall.t = 0; G.fall.kind = sim.world; $('hFell').innerHTML = `${T('fell')}<small>${sim.lives > 0 ? T('cp') : ''}</small>`; $('hFell').hidden = false; hudTubs(); break
       case 'dead':
         if (sim.lives <= 0) { showResult(false); break }
-        if (bot.on) { G.fadeT = 0.0001; break }
-        G.state = 'wait'; $('bGo').hidden = false; break
+        G.fadeT = 0.0001
+        if (!bot.on) G.state = 'wait'
+        break
       case 'finish': Snd.play('finish', { vol: 0.9 }); Snd.play('chime', { vol: 0.5 }); G.finishT = 0.0001; break
     }
   }
@@ -325,6 +336,7 @@ function tick(now) {
   if (G.state === 'play') { slowT += dt > 1 / 36 ? dt : -dt * 0.5; if (slowT < 0) slowT = 0; if (slowT > 1.2 && pr > 1) { pr = Math.max(1, pr - 0.25); renderer.setPixelRatio(pr); resize(); slowT = 0 } }
   if (!dbgPause) {
     if (G.state === 'ready') { G.readyT += dt; if (G.readyT > 1.1) { G.state = 'play'; showWorld(0) } }
+    if (G.state === 'count') countTick(dt)
     if (G.state === 'play' || G.state === 'ready' || G.state === 'result' || G.state === 'title') {
       acc += dt
       while (acc >= DT) { acc -= DT; if (G.state === 'play') stepOnce(); else { prev.x = sim.x; prev.y = sim.y; prev.z = sim.z; prev.th = sim.th; if (G.state === 'result' && sim.mode === 'done') sim.step(0, 0) } }
