@@ -51,6 +51,8 @@ button{background:none;border:0;cursor:pointer}
 .world.on{opacity:1}
 .world small{display:block;font:400 13px var(--num);letter-spacing:.3em;color:#a9d4ee;margin-bottom:6px}
 .fell{position:absolute;left:0;right:0;top:34%;text-align:center;font:400 38px var(--min);letter-spacing:.4em;color:var(--ice);text-shadow:0 2px 24px rgba(7,20,32,.9)}
+.go{position:absolute;left:50%;top:auto;bottom:calc(140px + var(--bot));transform:translateX(-50%);pointer-events:auto;letter-spacing:.3em;padding:14px 34px}
+.go:active{transform:translate(-50%,2px)}
 .fell small{display:block;margin-top:10px;font:400 14px var(--min);letter-spacing:.2em;color:var(--ice2)}
 .band{position:absolute;left:50%;transform:translateX(-50%);top:max(66px,calc(env(safe-area-inset-top) + 56px));width:min(62vw,250px);height:10px;background:rgba(7,20,32,.55);border:1px solid rgba(234,246,255,.45)}
 .band i{position:absolute;top:0;bottom:0;background:#8fe3c7;opacity:.9}

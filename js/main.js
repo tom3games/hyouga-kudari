@@ -89,6 +89,7 @@ function setupInput() {
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') input.keyL = 1; if (e.code === 'ArrowRight' || e.code === 'KeyD') input.keyR = 1; if (e.code === 'ArrowDown' || e.code === 'KeyS') input.keyB = 1
     if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'].includes(e.code)) e.preventDefault()
     if ((e.code === 'Enter' || e.code === 'Space') && G.state === 'title') startGame()
+    if ((e.code === 'Enter' || e.code === 'Space') && G.state === 'wait') resume()
     startAudio()
   })
   addEventListener('keyup', e => { if (e.code === 'ArrowLeft' || e.code === 'KeyA') input.keyL = 0; if (e.code === 'ArrowRight' || e.code === 'KeyD') input.keyR = 0; if (e.code === 'ArrowDown' || e.code === 'KeyS') input.keyB = 0 })
@@ -138,7 +139,7 @@ function startGame() {
   setWorldVisual(0, true); hudTubs(); G.newBest = false
 }
 function toTitle() {
-  G.state = 'title'; $('result').hidden = true; $('hud').hidden = true; $('title').hidden = false; sim.reset(0); sim.lives = P.lives; sim.falls = 0; sim.runT = 0; sim.maxS = 0; sim.dead = false; sim.mode = 'run'
+  G.state = 'title'; $('bGo').hidden = true; $('hFell').hidden = true; $('result').hidden = true; $('hud').hidden = true; $('title').hidden = false; sim.reset(0); sim.lives = P.lives; sim.falls = 0; sim.runT = 0; sim.maxS = 0; sim.dead = false; sim.mode = 'run'
   prev.x = sim.x; prev.y = sim.y; prev.z = sim.z; prev.th = sim.th; setWorldVisual(0, true); G.camBlend = 0; applyLang()
 }
 function showResult(done) {
@@ -153,6 +154,10 @@ function showResult(done) {
   const txt = T('tweet').replace('{d}', dist).replace('{t}', fmtTime(sim.runT))
   $('bShare').href = 'https://x.com/intent/post?text=' + encodeURIComponent(txt + ' #氷河くだり') + '&url=' + encodeURIComponent('https://tom3games.com/play/hyouga-kudari/')
   $('hud').hidden = true; $('result').hidden = false
+}
+function resume() {
+  if (G.state !== 'wait') return
+  $('bGo').hidden = true; G.state = 'play'; G.fadeT = 0.0001; startAudio()
 }
 function doRespawn() {
   sim.respawn(); sim.dead = false; prev.x = sim.x; prev.y = sim.y; prev.z = sim.z; prev.th = sim.th
@@ -178,7 +183,8 @@ function onEvents(evs) {
       case 'fall': Snd.play('fall', { vol: 0.9, rate: 1.45 }); Snd.play('squeak', { vol: 0.5, rate: 0.8 }); G.fall.t = 0; G.fall.kind = sim.world; $('hFell').innerHTML = `${T('fell')}<small>${sim.lives > 0 ? T('cp') : ''}</small>`; $('hFell').hidden = false; hudTubs(); break
       case 'dead':
         if (sim.lives <= 0) { showResult(false); break }
-        G.fadeT = 0.0001; break
+        if (bot.on) { G.fadeT = 0.0001; break }
+        G.state = 'wait'; $('bGo').hidden = false; break
       case 'finish': Snd.play('finish', { vol: 0.9 }); Snd.play('chime', { vol: 0.5 }); G.finishT = 0.0001; break
     }
   }
@@ -341,6 +347,7 @@ function tick(now) {
 function boot() {
   applyLang(); setupInput()
   $('bStart').onclick = () => { startGame() }
+  $('bGo').onclick = () => { resume() }
   $('howBtn').onclick = () => { $('how').hidden = false }
   $('howClose').onclick = () => { $('how').hidden = true }
   $('langBtn').onclick = () => { lang = lang === 'ja' ? 'en' : 'ja'; store.set('hk_lang', lang); try { localStorage.setItem('hk_lang', lang) } catch (e) {} applyLang() }
@@ -364,6 +371,6 @@ window.hk = {
   start: startGame, toTitle,
   botOn(o = {}) { bot.b = makeBot(sim, o); bot.on = true }, botOff() { bot.on = false },
   teleport(s, speed) { const i = Math.round(s / DS); sim.x = course.X[i]; sim.z = course.Z[i]; sim.th = course.TH[i]; sim.y = course.Y[i]; sim.i = i; sim.s = s; sim.vx = Math.sin(sim.th) * (speed || 20); sim.vz = Math.cos(sim.th) * (speed || 20); sim.ground = true; sim.mode = 'run'; sim.world = course.WLD[i]; sim.gatesPassed = course.gates.filter(g => g < i).length; sim.maxS = Math.max(sim.maxS, s); prev.x = sim.x; prev.y = sim.y; prev.z = sim.z; prev.th = sim.th; G.camSnap = true; if (sim.world !== G.wl) setWorldVisual(sim.world, true) },
-  showResult, doRespawn,
+  showResult, doRespawn, resume,
 }
 boot()
