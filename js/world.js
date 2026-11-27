@@ -60,7 +60,11 @@ float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash2
 float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*vn(p);p*=2.07;a*=.5;}return s;}
 void main(){
   vec2 p=vW.xz*uScale; vec2 q=p+vec2(uTime*uFlow,uTime*uFlow*.6);
+#ifdef LOWQ
+  float n=fbm(q+vn(q*1.7+3.)*0.65);
+#else
   float n=fbm(q+fbm(q*1.7+3.)*1.3);
+#endif
   vec3 col=mix(uA,uB,smoothstep(0.3,0.7,n));
   float crack=smoothstep(0.045,0.0,abs(n-0.52));
   col+=uG*uGlow*(crack*1.6+smoothstep(0.55,0.35,n)*0.55);
@@ -253,7 +257,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
   const skyM = skyMaterial(); const dome = new THREE.Mesh(new THREE.SphereGeometry(700, 32, 16), skyM); dome.renderOrder = -10; dome.frustumCulled = false; scene.add(dome)
   W.dome = dome; W.skyM = skyM
   // 床（雲海・溶鉄・闇・夜の海）
-  const floorM = new THREE.ShaderMaterial({ uniforms: { uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uG: { value: new THREE.Color() }, uFogC: { value: new THREE.Color() }, uGlow: { value: 0 }, uFogD: { value: 0.004 }, uTime: { value: 0 }, uFlow: { value: 0.01 }, uScale: { value: 0.018 } }, vertexShader: 'varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}', fragmentShader: FLOOR_FRAG })
+  const floorM = new THREE.ShaderMaterial({ uniforms: { uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uG: { value: new THREE.Color() }, uFogC: { value: new THREE.Color() }, uGlow: { value: 0 }, uFogD: { value: 0.004 }, uTime: { value: 0 }, uFlow: { value: 0.01 }, uScale: { value: 0.018 } }, vertexShader: 'varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}', fragmentShader: FLOOR_FRAG , defines: lowEnd ? { LOWQ: 1 } : {} })
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(3200, 3200, 1, 1).rotateX(-Math.PI / 2), floorM); floor.frustumCulled = false; scene.add(floor); W.floor = floor
   // 光
   const hemi = new THREE.HemisphereLight(0xffffff, 0x888888, 1); const sun = new THREE.DirectionalLight(0xffffff, 2); const sunT = new THREE.Object3D(); sun.target = sunT

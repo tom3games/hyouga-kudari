@@ -41,7 +41,9 @@ function setAmb(w) { const a = AMB[w]; Snd.loop('amb', a ? a[0] : null, a ? a[1]
 // ------------------------------------------------------------ シーン
 const course = buildCourse(), sim = makeSim(course)
 const renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'high-performance', alpha: false })
-let pr = Math.min(devicePixelRatio || 1, low ? 1.75 : 2), prMax = pr
+// スマホは軽めで始め、重ければ 0.6 まで自動で下げる（2026-11-27 Cloudflare で操作の遅れが不良24%）
+let pr = Math.min(devicePixelRatio || 1, low ? 1.25 : isTouch ? 1.5 : 2), prMax = pr
+const PR_MIN = isTouch ? 0.6 : 1
 renderer.setPixelRatio(pr)
 $('view').appendChild(renderer.domElement)
 const scene = new THREE.Scene()
@@ -333,7 +335,7 @@ function tick(now) {
   if (document.hidden) return
   fpsStat.n++; fpsStat.sum += dt; fpsStat.max = Math.max(fpsStat.max, dt); if (dt > 1 / 40) fpsStat.over++
   // 動的な解像度（遅い端末では下げる）
-  if (G.state === 'play') { slowT += dt > 1 / 36 ? dt : -dt * 0.5; if (slowT < 0) slowT = 0; if (slowT > 1.2 && pr > 1) { pr = Math.max(1, pr - 0.25); renderer.setPixelRatio(pr); resize(); slowT = 0 } }
+  if (G.state !== 'title' || isTouch) { slowT += dt > 1 / 40 ? dt : -dt * 0.5; if (slowT < 0) slowT = 0; if (slowT > 0.5 && pr > PR_MIN) { pr = Math.max(PR_MIN, Math.round((pr - 0.2) * 100) / 100); renderer.setPixelRatio(pr); resize(); slowT = 0 } }
   if (!dbgPause) {
     if (G.state === 'ready') { G.readyT += dt; if (G.readyT > 1.1) { G.state = 'play'; showWorld(0) } }
     if (G.state === 'count') countTick(dt)
@@ -369,15 +371,14 @@ function boot() {
   document.body.classList.toggle('nopads', !isTouch)
   sim.reset(0); prev.x = sim.x; prev.y = sim.y; prev.z = sim.z; prev.th = sim.th; G.yaw = sim.th; G.snapPos = true
   setWorldVisual(0, true); hudTubs()
-  // 事前に1回描いてシェーダーを作る
-  for (let i = 0; i < 2; i++) { frame(0.016, 1); renderer.render(scene, camera) }
-  $('ldFill').style.width = '100%'
-  setTimeout(() => { $('loading').hidden = true; $('title').hidden = false; window.__hkReady = true }, 150)
-  requestAnimationFrame(tick)
+  // 事前にシェーダーを作る。compileAsync で区切り、読み込み中のタップを長く待たせない（2026-11-27）
+  frame(0.016, 1)
+  const done = () => { frame(0.016, 1); renderer.render(scene, camera); $('ldFill').style.width = '100%'; setTimeout(() => { $('loading').hidden = true; $('title').hidden = false; window.__hkReady = true }, 150); requestAnimationFrame(tick) }
+  if (renderer.compileAsync) renderer.compileAsync(scene, camera).then(done, done); else done()
   if (/[?&]auto=1/.test(location.search)) setTimeout(() => { startGame(); hk.botOn({ delay: 0.3, eye: 0.2, every: 0.25, seed: 3 }) }, 600)
 }
 // 検証用の窓口
-window.hk = {
+window.hk = { pr: () => pr,
   sim, course, G, input, jumps, world, fx, scene, camera, renderer, fps: fpsStat,
   dbg: { pause(v = true) { dbgPause = v }, step(n = 1, render = true) { for (let i = 0; i < n; i++) { if (G.state === 'play') stepOnce(); else if (sim.mode === 'done') sim.step(0, 0) } if (render) { frame(1 / 60, 1); hudUpdate(); renderer.render(scene, camera) } } },
   start: startGame, toTitle,
