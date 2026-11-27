@@ -16,6 +16,8 @@ export const P = {
   lives: 5,
 }
 
+const CP_SPEED = { 9: 0.8, 12: 0.75 }   // 戻る地点ごとの速さ（目標の速さに掛ける）。書いていない地点は 0.95
+
 export function makeSim(course = buildCourse()) {
   if (!course.jumps) course.jumps = []
   const c = course
@@ -33,7 +35,9 @@ export function makeSim(course = buildCourse()) {
     sim.cp = cpIdx
     sim.x = c.X[i]; sim.z = c.Z[i]; sim.th = c.TH[i]; sim.y = c.Y[i]
     sim.vy = 0; sim.w = 0; sim.hold = 0; sim.steer = 0; sim.charge = 0; sim.boostT = 0; sim.ground = true; sim.mode = 'run'; sim.fallT = 0; sim.airT = 0
-    const v0 = cpIdx === 0 ? 9 : P.vt[c.WLD[i]] * 0.85
+    // 2026-11-27 本人「1950の区切り、スタートしたらすぐ落ちる。勢いが足りない」: 一律 0.85 では 1805・2522・3146m の後の跳ぶ所を越えられず、
+    // 一律 1.0 では 2741・3719m の後の急な曲がりで落ちた。地点ごとに、反応の違う bot 15 通りが戻って 6 秒以内に落ちない速さを選んだ表
+    const v0 = cpIdx === 0 ? 9 : P.vt[c.WLD[i]] * (CP_SPEED[cpIdx] ?? 0.95)
     sim.vx = Math.sin(sim.th) * v0; sim.vz = Math.cos(sim.th) * v0
     sim.i = i; sim.s = i * DS; sim.d = 0; sim.world = c.WLD[i]; sim.finished = false; sim.invul = 0.8
     sim.gatesPassed = c.gates.filter(g => g < i).length
