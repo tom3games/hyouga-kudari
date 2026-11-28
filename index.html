@@ -18,7 +18,7 @@
 <meta name="theme-color" content="#0b1a2b">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <script>(function(){var t0=Date.now();function add(){var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Hina+Mincho&family=Oswald:wght@400;600&display=swap';document.head.appendChild(l)}(function w(){if(window.__hkReady||Date.now()-t0>8000)add();else setTimeout(w,150)})()})()</script>
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <div id="view"></div>
@@ -93,6 +93,16 @@
   window.addEventListener('wheel',function(e){if(e.ctrlKey)e.preventDefault()},opt);
   window.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&['+','-','=','0',';'].indexOf(e.key)>=0)e.preventDefault()});
 })();
+// 読み込み中に押されたら、すぐ「読み込み中…」と答える（main.js の読み込みを待たずに動く。2026-11-28）
+(function(){
+  var l=document.getElementById('loading'),tm=0,orig=null;if(!l)return;
+  l.addEventListener('pointerdown',function(){
+    var t=l.querySelector('.ld-txt');if(!t)return;
+    var en;try{var sv=localStorage.getItem('hk_lang');en=sv?JSON.parse(sv)==='en':!/^ja/.test(navigator.language)}catch(e){en=!/^ja/.test(navigator.language)}
+    if(orig===null)orig=t.textContent;t.textContent=en?'Loading…':'読み込み中…';t.classList.add('tap');
+    clearTimeout(tm);tm=setTimeout(function(){t.textContent=orig;orig=null;t.classList.remove('tap')},1100);
+  },{passive:true});
+})();
 // 起動失敗の保険。5秒たって window.__hkReady が立っていなければ原因と UA を画面に出す
 (function(){
   var errs=[];
@@ -108,7 +118,7 @@
 </script>
 <script src="data.js?v=3"></script>
 <script src="js/sfx.js?v=1"></script>
-<script type="module" src="dist/main.js?v=7"></script>
+<script type="module" src="dist/main.js?v=8"></script>
 <script src="support.js?v=5" data-ja="温かいお茶" data-en="a hot tea"></script>
 </body>
 </html>

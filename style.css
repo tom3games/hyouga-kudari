@@ -19,6 +19,7 @@ button{background:none;border:0;cursor:pointer}
 .ld-boat{animation:slide 1.8s ease-in-out infinite alternate}
 @keyframes slide{from{transform:translateX(-24px)}to{transform:translateX(24px)}}
 .ld-txt{font:400 16px var(--min);letter-spacing:.3em;color:var(--ice)}
+.ld-txt.tap{color:#fff;letter-spacing:.2em}
 .ld-bar{width:min(200px,56vw);height:2px;background:rgba(234,246,255,.25);overflow:hidden}
 .ld-bar i{display:block;height:100%;width:0;background:var(--ice);transition:width .3s}
 

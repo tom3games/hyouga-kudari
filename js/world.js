@@ -76,15 +76,15 @@ void main(){
 }`
 
 // ------------------------------------------------------------------ 氷の道
-function iceTexture() {
+async function iceTexture(Y) {
   const W = 256, H = 512, cv = document.createElement('canvas'); cv.width = W; cv.height = H
   const g = cv.getContext('2d'), img = g.createImageData(W, H), d = img.data
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+  for (let y = 0; y < H; y++) { if ((y & 15) === 0) await Y(); for (let x = 0; x < W; x++) {
     const n = fbm3(x / 38, y / 38, 1.7, 4), m = fbm3(x / 9, y / 70, 5.1, 3)
     let v = 0.80 + 0.14 * n + 0.06 * m
     const i = (y * W + x) * 4
     d[i] = 214 * v; d[i + 1] = 236 * v; d[i + 2] = 255 * Math.min(1, v + 0.05); d[i + 3] = 255
-  }
+  } }
   g.putImageData(img, 0, 0)
   const r = rng(11)
   g.lineCap = 'round'
@@ -101,7 +101,7 @@ const PROF_TOP = [-1, -0.66, -0.33, 0, 0.33, 0.66, 1].map(u => [u, 0.07 * (1 - u
 const PROF_BOT = [[1.04, -0.12], [1.02, -0.4], [0.88, -0.8], [0.62, -1.2], [0.3, -1.5], [0, -1.6], [-0.3, -1.5], [-0.62, -1.2], [-0.88, -0.8], [-1.02, -0.4], [-1.04, -0.12]]
 const PROF = PROF_TOP.concat(PROF_BOT)
 
-export function buildTrack(c, mat) {
+export async function buildTrack(c, mat, Y = () => {}) {
   const group = new THREE.Group(), n = c.n
   const tints = ATM.map(a => a.track)
   const tintAt = i => {
@@ -116,6 +116,7 @@ export function buildTrack(c, mat) {
   group.userData.crumble = []
   for (const [ra, rb] of runs) {
     for (let ca = ra; ca <= rb; ) {
+      await Y()
       const crm = c.CRM[ca], lim = crm ? 8 : 56; let cb = ca
       while (cb < rb && cb - ca < lim && c.CRM[cb + 1] === crm) cb++
       if (cb === ca) cb = Math.min(rb, ca + 1)
@@ -250,12 +251,15 @@ function gearGeo(teeth, r0, r1, depth) {
 }
 
 // ------------------------------------------------------------------ 世界の組み立て
-export function createWorld(scene, renderer, c, opts = {}) {
+// 読み込み中の画面操作を止めないよう、区切りごとに await Y() で画面へ処理を返す（2026-11-28）
+export async function createWorld(scene, renderer, c, opts = {}) {
   const lowEnd = !!opts.low
+  const Y = opts.yield || (() => {})
   const W = { c, atm: {}, groups: [] }
   // 空
   const skyM = skyMaterial(); const dome = new THREE.Mesh(new THREE.SphereGeometry(700, 32, 16), skyM); dome.renderOrder = -10; dome.frustumCulled = false; scene.add(dome)
   W.dome = dome; W.skyM = skyM
+  await Y()
   // 床（雲海・溶鉄・闇・夜の海）
   const floorM = new THREE.ShaderMaterial({ uniforms: { uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uG: { value: new THREE.Color() }, uFogC: { value: new THREE.Color() }, uGlow: { value: 0 }, uFogD: { value: 0.004 }, uTime: { value: 0 }, uFlow: { value: 0.01 }, uScale: { value: 0.018 } }, vertexShader: 'varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}', fragmentShader: FLOOR_FRAG , defines: lowEnd ? { LOWQ: 1 } : {} })
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(3200, 3200, 1, 1).rotateX(-Math.PI / 2), floorM); floor.frustumCulled = false; scene.add(floor); W.floor = floor
@@ -264,19 +268,23 @@ export function createWorld(scene, renderer, c, opts = {}) {
   scene.add(hemi, sun, sunT); W.hemi = hemi; W.sun = sun; W.sunT = sunT
   scene.fog = new THREE.FogExp2(0xffffff, 0.004)
   const lantern = new THREE.PointLight(0xffc880, 0, 34, 1.4); scene.add(lantern); W.lantern = lantern
+  await Y()
   // 環境マップ（世界ごと。門をくぐる時に入れ替える）
   const pm = new THREE.PMREMGenerator(renderer), envs = []
   for (let k = 0; k < 4; k++) {
     const es = new THREE.Scene(), m = skyMaterial(); applySky(m, ATM[k], 3); es.add(new THREE.Mesh(new THREE.SphereGeometry(10, 24, 12), m))
     // 足元の暗さ（下から反射が白くならないように）
     const rt = pm.fromScene(es, 0.02, 0.1, 100); envs.push(rt.texture)
+    await Y()
   }
   W.envs = envs; scene.environment = envs[0]
+  await Y()
   // 氷の道
-  const iceMat = new THREE.MeshStandardMaterial({ vertexColors: true, map: iceTexture(), roughness: 0.62, metalness: 0.0, envMapIntensity: 0.6, emissive: new THREE.Color(0x3a7fb0), emissiveIntensity: 0.1 })
+  const iceMat = new THREE.MeshStandardMaterial({ vertexColors: true, map: await iceTexture(Y), roughness: 0.62, metalness: 0.0, envMapIntensity: 0.6, emissive: new THREE.Color(0x3a7fb0), emissiveIntensity: 0.1 })
   W.iceMat = iceMat
-  const track = buildTrack(c, iceMat); scene.add(track); W.track = track
+  const track = await buildTrack(c, iceMat, Y); scene.add(track); W.track = track
 
+  await Y()
   // ---- 門（3つの光の輪）と区切りの小さな輪、弾み台
   W.gates = []
   const gateGeo = new THREE.TorusGeometry(1, 0.045, 10, 72)
@@ -314,6 +322,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
     const post = (s) => { const p = new THREE.Group(); p.add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 2.2, 8), new THREE.MeshStandardMaterial({ color: 0x20384f, roughness: 0.6 }))); p.children[0].position.y = 1.1; const l = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffd27a })); l.position.y = 2.35; p.add(l); const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowT, color: 0xffc060, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })); sp.scale.setScalar(2.2); sp.position.y = 2.35; p.add(sp); p.position.set(s * (hw + 0.5), -0.1, 0); return p }
     g.add(post(1), post(-1)); g.position.set(c.X[ci], c.Y[ci], c.Z[ci]); g.rotation.y = th; scene.add(g); return g
   })
+  await Y()
   // 急な曲がりの手前の案内（外側に立つ矢印の旗。向きが道の曲がる向き）
   W.signs = []
   {
@@ -342,6 +351,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
       i = j + 1
     }
   }
+  await Y()
   // 弾み台（クッションと的）
   W.pads = []
   const rt = ringTex(); const padRings = []
@@ -359,6 +369,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
   W.mark = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: rt, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, opacity: 0.0, color: 0xffffff }))
   W.mark.scale.setScalar(2.6); W.mark.renderOrder = 20; W.mark.visible = false; scene.add(W.mark)
 
+  await Y()
   // ---- 遠景
   const R = rng(7)
   const worldRange = k => [k === 0 ? 0 : c.gates[k - 1], k === 3 ? c.n - 1 : c.gates[k]]
@@ -395,6 +406,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
   for (let k = 0; k < 4; k++) {
     const [wa, wb] = worldRange(k); zoneWorld = k
     for (let za = wa; za < wb; za += ZN) {
+      await Y()
       const zb = Math.min(wb, za + ZN), mid = Math.round((za + zb) / 2), g = new THREE.Group()
       const ri = () => za + Math.floor(R() * (zb - za))
       const rr = (a, b) => a + R() * (b - a)
@@ -425,6 +437,7 @@ export function createWorld(scene, renderer, c, opts = {}) {
       addZone(g, mid)
     }
   }
+  await Y()
   // ---- 世界3: 洞窟のトンネル（下だけ開いている）
   {
     const [wa, wb] = worldRange(2), step = 3, rings = []

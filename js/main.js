@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { buildCourse, DS } from './course.js'
-import { makeSim, computeJumps, P, DT } from './sim.js'
+import { makeSim, computeJumpsAsync, P, DT } from './sim.js'
 import { makeBot } from './bot.js'
 import { createWorld, ATM, lerpAtm } from './world.js'
 import { createBoat } from './boat.js'
@@ -48,11 +48,20 @@ renderer.setPixelRatio(pr)
 $('view').appendChild(renderer.domElement)
 const scene = new THREE.Scene()
 const camera = new THREE.PerspectiveCamera(70, 1, 0.3, 1800)
-const world = createWorld(scene, renderer, course, { low })
-const boat = createBoat(); scene.add(boat.root, boat.shadow)
-const fx = createFx(scene, { low })
-const lantLight = world.lantern
-const keyLight = new THREE.PointLight(0xfff0dc, 3.5, 8, 1.8); scene.add(keyLight)
+// 重い組み立ては区切って、合間に画面へ処理を返す（読み込み中の #loading のタップに即応えるため。2026-11-28）
+let yAt = performance.now()
+const Y = async () => { const n = performance.now(); if (n - yAt < 10) return; await new Promise(r => { const c = new MessageChannel(); c.port1.onmessage = () => r(); c.port2.postMessage(0) }); yAt = performance.now() }
+let world, boat, fx, lantLight, keyLight
+async function buildScene() {
+  const ldp = p => { const f = $('ldFill'); if (f) f.style.width = p + '%' }
+  ldp(8); jumps = await computeJumpsAsync(course, Y); ldp(30); await Y()
+  world = await createWorld(scene, renderer, course, { low, yield: Y }); await Y()
+  ldp(80); boat = createBoat(); scene.add(boat.root, boat.shadow)
+  fx = createFx(scene, { low })
+  lantLight = world.lantern
+  keyLight = new THREE.PointLight(0xfff0dc, 3.5, 8, 1.8); scene.add(keyLight)
+  await Y()
+}
 function resize() {
   const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix()
 }
@@ -63,7 +72,7 @@ const G = { count: {}, state: 'title', t: 0, shake: 0, kick: 0, fall: { t: 0 }, 
 const prev = { x: 0, y: 0, z: 0, th: 0 }
 let atmCur = lerpAtm(ATM[0], ATM[0], 0, {})
 let bestInfo = store.get('hk_best', null)
-const jumps = computeJumps(course)
+let jumps = []
 const input = { steer: 0, brake: 0, padL: 0, padR: 0, padB: 0, dragX: 0, dragY: 0, dragging: false, keyL: 0, keyR: 0, keyB: 0 }
 function curInput() {
   let s = 0, b = 0
@@ -358,8 +367,8 @@ function tick(now) {
 }
 
 // ------------------------------------------------------------ 起動
-function boot() {
-  applyLang(); setupInput()
+async function boot() {
+  applyLang(); setupInput(); await Y()
   $('bStart').onclick = () => { startGame() }
   $('bGo').onclick = () => { resume() }
   $('howBtn').onclick = () => { $('how').hidden = false }
@@ -370,20 +379,20 @@ function boot() {
   $('bAgain').onclick = () => { toTitle(); startGame() }
   document.body.classList.toggle('nopads', !isTouch)
   sim.reset(0); prev.x = sim.x; prev.y = sim.y; prev.z = sim.z; prev.th = sim.th; G.yaw = sim.th; G.snapPos = true
-  setWorldVisual(0, true); hudTubs()
+  setWorldVisual(0, true); hudTubs(); await Y()
   // 事前にシェーダーを作る。compileAsync で区切り、読み込み中のタップを長く待たせない（2026-11-27）
-  frame(0.016, 1)
+  frame(0.016, 1); await Y()
   const done = () => { frame(0.016, 1); renderer.render(scene, camera); $('ldFill').style.width = '100%'; setTimeout(() => { $('loading').hidden = true; $('title').hidden = false; window.__hkReady = true }, 150); requestAnimationFrame(tick) }
   if (renderer.compileAsync) renderer.compileAsync(scene, camera).then(done, done); else done()
   if (/[?&]auto=1/.test(location.search)) setTimeout(() => { startGame(); hk.botOn({ delay: 0.3, eye: 0.2, every: 0.25, seed: 3 }) }, 600)
 }
 // 検証用の窓口
-window.hk = { pr: () => pr,
+function expose() { window.hk = { pr: () => pr,
   sim, course, G, input, jumps, world, fx, scene, camera, renderer, fps: fpsStat,
   dbg: { pause(v = true) { dbgPause = v }, step(n = 1, render = true) { for (let i = 0; i < n; i++) { if (G.state === 'play') stepOnce(); else if (sim.mode === 'done') sim.step(0, 0) } if (render) { frame(1 / 60, 1); hudUpdate(); renderer.render(scene, camera) } } },
   start: startGame, toTitle,
   botOn(o = {}) { bot.b = makeBot(sim, o); bot.on = true }, botOff() { bot.on = false },
   teleport(s, speed) { const i = Math.round(s / DS); sim.x = course.X[i]; sim.z = course.Z[i]; sim.th = course.TH[i]; sim.y = course.Y[i]; sim.i = i; sim.s = s; sim.vx = Math.sin(sim.th) * (speed || 20); sim.vz = Math.cos(sim.th) * (speed || 20); sim.ground = true; sim.mode = 'run'; sim.world = course.WLD[i]; sim.gatesPassed = course.gates.filter(g => g < i).length; sim.maxS = Math.max(sim.maxS, s); prev.x = sim.x; prev.y = sim.y; prev.z = sim.z; prev.th = sim.th; G.camSnap = true; if (sim.world !== G.wl) setWorldVisual(sim.world, true) },
   showResult, doRespawn, resume,
-}
-boot()
+} }
+buildScene().then(() => { expose(); return boot() })

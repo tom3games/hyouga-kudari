@@ -185,28 +185,47 @@ export function makeSim(course = buildCourse()) {
 }
 
 // 見せ場ごとの「ちょうどいい速さ」を、まっすぐ進む舟を速さ別に試し走りして求める（画面の速さ帯の元）
+// 見せ場1つ分（ok の速さを1つずつ試す）。Y を渡すと速さ1つごとに画面へ処理を返せる
+function jumpOne(c, gi) {
+  const g = c.gaps[gi]
+  if (!c.PAD[g.to]) return null
+  const g2 = c.gaps[gi + 1]; if (!g2) return null
+  const ok = []
+  const one = v => {
+    const sim = makeSim(c); sim.fixSpeed = v
+    sim.reset(0)
+    const i = Math.max(2, g.from - 8)
+    sim.x = c.X[i]; sim.z = c.Z[i]; sim.th = c.TH[i]; sim.y = c.Y[i]; sim.i = i; sim.vx = Math.sin(sim.th) * v; sim.vz = Math.cos(sim.th) * v; sim.invul = 0
+    let good = false
+    for (let k = 0; k < 60 * 9; k++) {
+      sim.step(0, 0)
+      if (sim.mode === 'fall') break
+      if (sim.ground && sim.i > g2.to + 4) { good = true; break }
+    }
+    if (good) ok.push(v)
+  }
+  return { ok, one, g, g2 }
+}
+const jumpEntry = (g, g2, ok) => ({ from: g.from, to: g.to, end: g2.to, lo: ok.length ? ok[0] : 0, hi: ok.length ? ok[ok.length - 1] : 0 })
 export function computeJumps(c) {
   if (c.jumps && c.jumps.length) return c.jumps
   const out = []
   for (let gi = 0; gi < c.gaps.length; gi++) {
-    const g = c.gaps[gi]
-    if (!c.PAD[g.to]) continue
-    const g2 = c.gaps[gi + 1]; if (!g2) continue
-    const ok = []
-    for (let v = 8; v <= 36; v += 0.5) {
-      const sim = makeSim(c); sim.fixSpeed = v
-      sim.reset(0)
-      const i = Math.max(2, g.from - 8)
-      sim.x = c.X[i]; sim.z = c.Z[i]; sim.th = c.TH[i]; sim.y = c.Y[i]; sim.i = i; sim.vx = Math.sin(sim.th) * v; sim.vz = Math.cos(sim.th) * v; sim.invul = 0
-      let good = false
-      for (let k = 0; k < 60 * 9; k++) {
-        sim.step(0, 0)
-        if (sim.mode === 'fall') break
-        if (sim.ground && sim.i > g2.to + 4) { good = true; break }
-      }
-      if (good) ok.push(v)
-    }
-    out.push({ from: g.from, to: g.to, end: g2.to, lo: ok.length ? ok[0] : 0, hi: ok.length ? ok[ok.length - 1] : 0 })
+    const t = jumpOne(c, gi); if (!t) continue
+    for (let v = 8; v <= 36; v += 0.5) t.one(v)
+    out.push(jumpEntry(t.g, t.g2, t.ok))
+  }
+  c.jumps = out
+  return out
+}
+// 読み込み中に画面を止めないよう、速さ1つ試すごとに Y() で処理を返す版
+export async function computeJumpsAsync(c, Y) {
+  if (c.jumps && c.jumps.length) return c.jumps
+  const out = []
+  for (let gi = 0; gi < c.gaps.length; gi++) {
+    const t = jumpOne(c, gi); if (!t) continue
+    for (let v = 8; v <= 36; v += 0.5) { t.one(v); await Y() }
+    out.push(jumpEntry(t.g, t.g2, t.ok))
   }
   c.jumps = out
   return out
