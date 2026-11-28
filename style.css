@@ -85,3 +85,7 @@ body.nopads #pads{display:none}
 .count{position:absolute;left:0;right:0;top:30%;text-align:center;font:400 96px var(--min);color:var(--ice);text-shadow:0 2px 28px rgba(7,20,32,.9);pointer-events:none}
 .count.pop{animation:cpop .9s ease-out}
 @keyframes cpop{0%{transform:scale(1.6);opacity:0}25%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:.2}}
+/* 2026-11-28 背の低い画面（X のアプリの中）で結果の広告を出す時だけ、横丁の result-ad.js が html に tm-adlift を付ける。カードを詰めて広告の場所を作る */
+.tm-adlift .card{padding:16px 22px;gap:8px}
+.tm-adlift .r-dist b{font-size:56px}
+.tm-adlift .card .start{margin-top:0}
